@@ -97,6 +97,12 @@ td.r,th.r{text-align:right}
 .prize{display:grid;grid-template-columns:1fr auto;max-width:360px;gap:4px 20px;font-size:14px}
 .prize b{font-family:var(--disp);font-size:16px}
 .chiprow{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.recgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.reccard{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px}
+.reccard .lbl{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--ink-soft);font-weight:600}
+.reccard .val{font-family:var(--disp);font-weight:800;font-size:30px;line-height:1.05;margin:2px 0}
+.reccard .who{font-size:13px;color:var(--ink)}
+.reccard .when{font-size:11px;color:var(--ink-soft)}
 .chip{display:inline-flex;align-items:center;gap:6px;background:var(--chalk);border:1px solid var(--line);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600}
 .chip b{font-family:var(--disp);font-size:15px}
 .chip.soon{background:#F4ECD9;border-color:var(--gold)}
@@ -129,6 +135,7 @@ dialog::backdrop{background:rgba(14,27,44,.5)}
   <div class="brand">
     <div class="wordmark"><small id="hdrSub">TDFL · SLEEPER LEAGUE</small>The Dynasty League</div>
     <div class="season-ctl">
+      <a id="sleeperLink" href="https://sleeper.com" target="_blank" rel="noopener" class="lockbadge" title="Open this league on Sleeper" style="text-decoration:none">↗ Sleeper</a>
       <button id="lockBadge" class="lockbadge locked" title="Commissioner editing is locked. Click to unlock.">🔒 Read-only</button>
       <label>Cap mode</label>
       <div class="mode-toggle" id="modeToggle">
@@ -145,6 +152,9 @@ dialog::backdrop{background:rgba(14,27,44,.5)}
     <button data-tab="trades">Trades</button>
     <button data-tab="draft">Draft</button>
     <button data-tab="stand">League</button>
+    <button data-tab="records">Records</button>
+    <button data-tab="power">Power</button>
+    <button data-tab="payouts">Payouts</button>
     <button data-tab="office">Office</button>
     <button data-tab="rules">Rules</button>
   </nav>
@@ -254,6 +264,14 @@ dialog::backdrop{background:rgba(14,27,44,.5)}
       <p class="sub" id="draftNote">If you run the draft in Sleeper instead, Sync pulls the picks and prices them here.</p>
       <div class="tablewrap"><table id="tblDraft"></table></div>
     </div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+        <h3 style="margin:0">Draft archives</h3>
+        <select id="archiveSeason" class="salinput" style="width:auto"></select>
+      </div>
+      <p class="sub">Every draft the league has ever run, pulled from Sleeper. Rookie and auction picks, who took whom, and for what.</p>
+      <div class="tablewrap"><table id="tblArchive"></table></div>
+    </div>
   </section>
 
   <section id="tab-stand" hidden>
@@ -269,6 +287,55 @@ dialog::backdrop{background:rgba(14,27,44,.5)}
       <h3>All-time records</h3>
       <div class="tablewrap"><table id="tblAllTime"></table></div>
       <div id="histSeasons"></div>
+    </div>
+  </section>
+
+  <section id="tab-records" hidden>
+    <div class="card">
+      <h2>Hall of fame</h2>
+      <p class="sub">Champions banner and the all-time leaderboard. Titles first, then wins, then total points.</p>
+      <div id="hofBanners" class="chiprow"></div>
+      <div class="tablewrap" style="margin-top:10px"><table id="tblHof"></table></div>
+    </div>
+    <div class="card">
+      <h2>Record book</h2>
+      <p class="sub" id="recNote">All-time single-game and season marks, pulled from every week Sleeper has on file.</p>
+      <div id="recBook" class="recgrid"></div>
+    </div>
+    <div class="card">
+      <h2>Rivalries</h2>
+      <p class="sub">Pick two teams to see their all-time head-to-head — record, average score, and the biggest beatdown either way.</p>
+      <div class="formrow">
+        <div class="field"><label>Team A</label><select id="rivA" class="salinput" style="width:auto"></select></div>
+        <div class="field"><label>Team B</label><select id="rivB" class="salinput" style="width:auto"></select></div>
+      </div>
+      <div id="rivResult" style="margin-top:12px"></div>
+    </div>
+  </section>
+
+  <section id="tab-power" hidden>
+    <div class="card">
+      <h2>Power rankings</h2>
+      <p class="sub" id="powerNote">A blended score: recent scoring, season-long points, and record. Not the standings — this rewards teams playing well right now, not who caught soft matchups.</p>
+      <div class="tablewrap"><table id="tblPower"></table></div>
+      <p class="sub" style="margin-top:8px">Power score = 45% average points (last 4 weeks) + 30% season avg points + 25% win rate, scaled 0–100 against the field.</p>
+    </div>
+  </section>
+
+  <section id="tab-payouts" hidden>
+    <div class="card">
+      <h2>Payout tracker</h2>
+      <p class="sub">Buy-ins collected vs. prizes owed, per the constitution's prize schedule. Toggle the buy-in to match the season. Check "paid" as owners settle up.</p>
+      <div class="formrow">
+        <div class="field"><label>Buy-in</label>
+          <select id="payBuyin" class="salinput" style="width:auto"><option value="100">$100 (2025+)</option><option value="50">$50 (2024)</option></select>
+        </div>
+        <div id="payPot" class="sub" style="margin:0;align-self:center"></div>
+      </div>
+      <h3>Buy-ins collected</h3>
+      <div class="tablewrap"><table id="tblPayIn"></table></div>
+      <h3>Prizes owed</h3>
+      <div class="tablewrap"><table id="tblPayOut"></table></div>
     </div>
   </section>
 
@@ -561,17 +628,26 @@ async function syncSleeper(){
     const acq = {}; // pid -> {season, base, src}
     let rookiePicks = [];
     const history = [];
+    const weekScores = [];   // {season, week, rosterId, team, points}
+    const games = [];        // {season, week, aRid, bRid, aTeam, bTeam, aPts, bPts}
+    const draftArchive = [];  // {season, picks:[{pick,pid,rosterId,value,type,round,slot}]}
     for (const lg of [...chain].reverse()) {
       const [lgUsers, lgRosters] = await Promise.all([
         j(`${API}/league/${lg.league_id}/users`).catch(()=>[]),
         j(`${API}/league/${lg.league_id}/rosters`).catch(()=>[]) ]);
       const lgUserById = Object.fromEntries(lgUsers.map(u => [u.user_id, u]));
+      const seasonPicks = [];
       const drafts = await jSoft(`${API}/league/${lg.league_id}/drafts`, []);
       for (const d of drafts) {
         const picks = await jSoft(`${API}/draft/${d.draft_id}/picks`, []);
         const dat = d.start_time || d.created || 0; // drafts precede in-season moves
         if (d.type === "auction") {
-          for (const p of picks) if (p.player_id) acq[p.player_id] = { season: +lg.season, base: +((p.metadata && p.metadata.amount) || 1), src: "Auction", at: dat };
+          for (const p of picks) if (p.player_id) {
+            const amt = +((p.metadata && p.metadata.amount) || 1);
+            acq[p.player_id] = { season: +lg.season, base: amt, src: "Auction", at: dat };
+            seasonPicks.push({ type: "auction", pid: p.player_id, rosterId: p.roster_id, value: amt,
+              pick: p.pick_no || null, round: null, slot: null });
+          }
         } else {
           const perRound = d.settings && d.settings.teams || 12;
           const rp = [];
@@ -582,6 +658,8 @@ async function syncSleeper(){
             const val = rookieValue(p.round, slot);
             acq[p.player_id] = { season: +lg.season, base: val, src: "Rookie", at: dat };
             rp.push({ round: p.round, slot, pick: `${p.round}.${String(slot).padStart(2,"0")}`, pid: p.player_id, rosterId: p.roster_id, value: val });
+            seasonPicks.push({ type: "rookie", pid: p.player_id, rosterId: p.roster_id, value: val,
+              pick: `${p.round}.${String(slot).padStart(2,"0")}`, round: p.round, slot });
           }
           if (+lg.season === season && rp.length) rookiePicks = rp;
         }
@@ -610,6 +688,34 @@ async function syncSleeper(){
         const wb = await j(`${API}/league/${lg.league_id}/winners_bracket`);
         for (const m of wb) { if (m.p === 1) { champId = m.w; runnerId = m.l; } if (m.p === 3) thirdId = m.w; }
       } catch(e){}
+      const lgNameByRid = Object.fromEntries(lgRosters.map(r => {
+        const u = lgUserById[r.owner_id] || {};
+        return [r.roster_id, ((u.metadata && u.metadata.team_name) || u.display_name || `Roster ${r.roster_id}`).trim()];
+      }));
+      // Per-week matchups → individual team-week scores and head-to-head games.
+      // Powers the record book (single-game highs/lows, margins) and rivalries.
+      const seasonWeeks = await Promise.all(Array.from({length:18},(_,w)=>jSoft(`${API}/league/${lg.league_id}/matchups/${w+1}`, [])));
+      seasonWeeks.forEach((wk, wi) => {
+        const week = wi + 1;
+        const byMatch = {};
+        for (const m of (wk||[])) {
+          if (m.matchup_id == null || m.points == null) continue;
+          (byMatch[m.matchup_id] = byMatch[m.matchup_id] || []).push(m);
+          weekScores.push({ season: lg.season, week, rosterId: m.roster_id,
+            team: lgNameByRid[m.roster_id] || `Roster ${m.roster_id}`, points: +m.points });
+        }
+        for (const pair of Object.values(byMatch)) {
+          if (pair.length !== 2) continue;
+          const [a, b] = pair;
+          games.push({ season: lg.season, week,
+            aRid: a.roster_id, bRid: b.roster_id,
+            aTeam: lgNameByRid[a.roster_id] || `Roster ${a.roster_id}`,
+            bTeam: lgNameByRid[b.roster_id] || `Roster ${b.roster_id}`,
+            aPts: +a.points, bPts: +b.points });
+        }
+      });
+      // Archive this season's draft picks (rookie + auction) with names filled later.
+      draftArchive.push({ season: lg.season, picks: seasonPicks });
       history.push({ season: lg.season, complete: lg.status === "complete",
         champion: champId, runnerUp: runnerId, third: thirdId,
         teams: lgRosters.map(r => {
@@ -623,6 +729,8 @@ async function syncSleeper(){
         }).sort((a,b)=>(b.wins-a.wins)||(b.fpts-a.fpts)) });
     }
     state.history = history.reverse(); // newest first
+    state.weekScores = weekScores;
+    state.games = games;
 
     // 3. FAAB spent this season
     const faabSpent = {};
@@ -666,10 +774,16 @@ async function syncSleeper(){
     });
 
     const teamByRid = Object.fromEntries(teams.map(t => [t.rosterId, t.name]));
+    const pname = pid => (allPlayers[pid] && (allPlayers[pid].full_name || (allPlayers[pid].first_name ? allPlayers[pid].first_name+" "+allPlayers[pid].last_name : pid))) || (/^[A-Z]{2,3}$/.test(pid) ? pid+" DEF" : pid);
     state.rookieDraft = rookiePicks.map(p => ({ ...p,
       player: (allPlayers[p.pid] && (allPlayers[p.pid].full_name || p.pid)) || p.pid,
       pos: allPlayers[p.pid] && allPlayers[p.pid].position || "", team: teamByRid[p.rosterId] || "" }));
+    state.draftArchive = draftArchive.map(d => ({ season: d.season,
+      picks: d.picks.map(pk => ({ ...pk, player: pname(pk.pid),
+        pos: (allPlayers[pk.pid] && allPlayers[pk.pid].position) || (/^[A-Z]{2,3}$/.test(pk.pid)?"DEF":""),
+        team: teamByRid[pk.rosterId] || `Roster ${pk.rosterId}` })) })).reverse();
     state.teams = teams;
+    state.leagueId = cur.league_id;
     state.season = String(season);
     state.leagueName = cur.name || state.leagueName;
     state.source = "Sleeper";
@@ -706,6 +820,8 @@ async function syncSleeper(){
 /* ======== renders ======== */
 function renderHeader(){
   $("hdrSub").textContent = `TDFL · ${esc(state.season)} SEASON · ${state.source.toUpperCase()}` ;
+  const link = $("sleeperLink");
+  if (link) link.href = state.leagueId ? `https://sleeper.com/leagues/${state.leagueId}` : "https://sleeper.com";
   document.querySelectorAll("#modeToggle button").forEach(b => b.classList.toggle("on", b.dataset.mode === state.mode));
 }
 
@@ -1108,16 +1224,206 @@ function renderHistory(){
     `</table></div>`).join("");
 }
 
+/* ======== records: hall of fame + record book + rivalries ======== */
+function ownerAgg(){
+  const agg = {};
+  for (const s of (state.history||[])) for (const t of s.teams){
+    const k = t.owner || t.name;
+    const a = agg[k] = agg[k] || { owner:k, seasons:0, wins:0, losses:0, fpts:0, titles:0, seconds:0, thirds:0 };
+    a.seasons++; a.wins += t.wins; a.losses += t.losses; a.fpts += t.fpts;
+    if (s.complete && t.champ) a.titles++; if (s.complete && t.runner) a.seconds++; if (s.complete && t.third) a.thirds++;
+  }
+  return Object.values(agg);
+}
+function renderRecords(){
+  // Hall of fame banners
+  const h = state.history || [];
+  $("hofBanners").innerHTML = h.filter(s => s.complete).map(s => {
+    const champ = s.teams.find(t => t.champ);
+    return champ ? `<span class="chip champ">🏆 ${esc(s.season)} — ${esc(champ.name)}<span style="opacity:.7"> (${esc(champ.owner||"")})</span></span>` : "";
+  }).filter(Boolean).join("") || `<span class="sub" style="margin:0">No completed championships yet.</span>`;
+
+  const agg = ownerAgg().sort((a,b)=>(b.titles-a.titles)||(b.wins-a.wins)||(b.fpts-a.fpts));
+  $("tblHof").innerHTML = agg.length ? `<tr><th>Owner</th><th class="r">🏆</th><th class="r">2nd</th><th class="r">Seasons</th><th class="r">W</th><th class="r">L</th><th class="r">Win %</th><th class="r">Total PF</th></tr>` +
+    agg.map(a => `<tr><td>${esc(a.owner)}</td><td class="r num">${a.titles||""}</td><td class="r num">${a.seconds||""}</td>
+      <td class="r num">${a.seasons}</td><td class="r num">${a.wins}</td><td class="r num">${a.losses}</td>
+      <td class="r num">${a.wins+a.losses?Math.round(100*a.wins/(a.wins+a.losses))+"%":"—"}</td>
+      <td class="r num">${a.fpts.toFixed(0)}</td></tr>`).join("")
+    : `<tr><td style="color:var(--ink-soft)">Sync to build the leaderboard.</td></tr>`;
+
+  // Record book from week scores + games
+  const ws = state.weekScores || [], gm = state.games || [];
+  if (!ws.length){ $("recBook").innerHTML = `<div class="sub">Weekly scores fill in after a Sleeper sync.</div>`; }
+  else {
+    const hi = [...ws].sort((a,b)=>b.points-a.points)[0];
+    const lo = [...ws].filter(x=>x.points>0).sort((a,b)=>a.points-b.points)[0];
+    const withMargin = gm.map(g => ({...g, margin: Math.abs(g.aPts-g.bPts),
+      winner: g.aPts>=g.bPts?g.aTeam:g.bTeam, loser: g.aPts>=g.bPts?g.bTeam:g.aTeam,
+      hi: Math.max(g.aPts,g.bPts), lo: Math.min(g.aPts,g.bPts), total: g.aPts+g.bPts }));
+    const blowout = [...withMargin].sort((a,b)=>b.margin-a.margin)[0];
+    const nailbiter = [...withMargin].filter(g=>g.hi>0).sort((a,b)=>a.margin-b.margin)[0];
+    const shootout = [...withMargin].sort((a,b)=>b.total-a.total)[0];
+    // best single season PF
+    let bestSeason = null;
+    for (const s of h) for (const t of s.teams) if (!bestSeason || t.fpts > bestSeason.fpts) bestSeason = {...t, season:s.season};
+    const card = (lbl, val, who, when) => `<div class="reccard"><div class="lbl">${lbl}</div><div class="val num">${val}</div><div class="who">${esc(who)}</div><div class="when">${esc(when)}</div></div>`;
+    $("recBook").innerHTML = [
+      hi && card("Highest single game", hi.points.toFixed(1), hi.team, `${hi.season} · Week ${hi.week}`),
+      lo && card("Lowest single game", lo.points.toFixed(1), lo.team, `${lo.season} · Week ${lo.week}`),
+      blowout && card("Biggest blowout", "+"+blowout.margin.toFixed(1), `${blowout.winner} over ${blowout.loser}`, `${blowout.season} · Week ${blowout.week}`),
+      nailbiter && card("Closest game", nailbiter.margin.toFixed(1), `${nailbiter.winner} edged ${nailbiter.loser}`, `${nailbiter.season} · Week ${nailbiter.week}`),
+      shootout && card("Highest-scoring game", shootout.total.toFixed(1), `${shootout.aTeam} vs ${shootout.bTeam}`, `${shootout.season} · Week ${shootout.week}`),
+      bestSeason && card("Most points, one season", bestSeason.fpts.toFixed(0), bestSeason.name, `${bestSeason.season}`),
+    ].filter(Boolean).join("");
+  }
+
+  // Rivalries
+  const fillSel = (id) => { const el = $(id); if (el.options.length !== state.teams.length) el.innerHTML = state.teams.map((t,i)=>`<option value="${i}">${esc(t.name)}</option>`).join(""); };
+  fillSel("rivA"); fillSel("rivB");
+  if ($("rivA").selectedIndex < 0) $("rivA").selectedIndex = 0;
+  if ($("rivB").selectedIndex < 0) $("rivB").selectedIndex = Math.min(1, state.teams.length-1);
+  renderRivalry();
+}
+function renderRivalry(){
+  const gm = state.games || [];
+  let ia = $("rivA").selectedIndex, ib = $("rivB").selectedIndex;
+  if (ia < 0) ia = 0;
+  if (ib < 0) ib = Math.min(1, state.teams.length - 1);
+  if (ia === ib && state.teams.length > 1) ib = ia === 0 ? 1 : 0; // never compare a team to itself
+  const a = state.teams[ia], b = state.teams[ib];
+  if (!a || !b || a === b){ $("rivResult").innerHTML = `<span class="sub">Need at least two teams.</span>`; return; }
+  // Match on team name (roster IDs are stable within a chain; names are what we stored on games)
+  const meets = gm.filter(g => (g.aTeam===a.name&&g.bTeam===b.name) || (g.aTeam===b.name&&g.bTeam===a.name));
+  if (!meets.length){ $("rivResult").innerHTML = `<span class="sub">No head-to-head games on record between ${esc(a.name)} and ${esc(b.name)} yet.</span>`; return; }
+  let aw=0, bw=0, aPts=0, bPts=0, biggestA=null, biggestB=null;
+  for (const g of meets){
+    const ap = g.aTeam===a.name?g.aPts:g.bPts, bp = g.aTeam===a.name?g.bPts:g.aPts;
+    aPts+=ap; bPts+=bp;
+    if (ap>bp){ aw++; if(!biggestA||ap-bp>biggestA.m) biggestA={m:ap-bp,s:g.season,w:g.week,ap,bp}; }
+    else if (bp>ap){ bw++; if(!biggestB||bp-ap>biggestB.m) biggestB={m:bp-ap,s:g.season,w:g.week,ap,bp}; }
+  }
+  const n = meets.length;
+  $("rivResult").innerHTML = `
+    <div class="keepbar" style="position:static">
+      <span>All-time <b class="num">${aw}–${bw}</b></span>
+      <span>${esc(a.name)} avg <b class="num">${(aPts/n).toFixed(1)}</b></span>
+      <span>${esc(b.name)} avg <b class="num">${(bPts/n).toFixed(1)}</b></span>
+      <span><b class="num">${n}</b> ${n===1?"meeting":"meetings"}</span>
+    </div>
+    <div class="recgrid" style="margin-top:10px">
+      ${biggestA?`<div class="reccard"><div class="lbl">${esc(a.name)}'s best win</div><div class="val num">+${biggestA.m.toFixed(1)}</div><div class="who">${biggestA.ap.toFixed(1)} – ${biggestA.bp.toFixed(1)}</div><div class="when">${biggestA.s} · Week ${biggestA.w}</div></div>`:""}
+      ${biggestB?`<div class="reccard"><div class="lbl">${esc(b.name)}'s best win</div><div class="val num">+${biggestB.m.toFixed(1)}</div><div class="who">${biggestB.bp.toFixed(1)} – ${biggestB.ap.toFixed(1)}</div><div class="when">${biggestB.s} · Week ${biggestB.w}</div></div>`:""}
+    </div>`;
+}
+
+/* ======== power rankings ======== */
+function renderPower(){
+  const ws = state.weekScores || [];
+  const curSeason = state.season;
+  // Recent form: last 4 weeks of the current season per team (by name)
+  const cur = ws.filter(x => String(x.season) === String(curSeason));
+  const maxWeek = cur.reduce((m,x)=>Math.max(m,x.week),0);
+  const recentByTeam = {}, seasonByTeam = {};
+  for (const x of cur){
+    (seasonByTeam[x.team] = seasonByTeam[x.team] || []).push(x.points);
+    if (x.week > maxWeek - 4) (recentByTeam[x.team] = recentByTeam[x.team] || []).push(x.points);
+  }
+  const avg = arr => arr && arr.length ? arr.reduce((s,v)=>s+v,0)/arr.length : 0;
+  const rows = state.teams.map(t => {
+    const recent = avg(recentByTeam[t.name]);
+    const seasonAvg = avg(seasonByTeam[t.name]);
+    const gp = (t.wins||0)+(t.losses||0);
+    const winRate = gp ? t.wins/gp : 0;
+    return { t, recent, seasonAvg, winRate };
+  });
+  if (!maxWeek){ $("tblPower").innerHTML = `<tr><td style="color:var(--ink-soft)">Power rankings appear once the season has weekly scores. Sync after Week 1.</td></tr>`; return; }
+  // scale each component 0..1 across the field
+  const span = (get) => { const vs = rows.map(get); const mn=Math.min(...vs), mx=Math.max(...vs); return v => mx>mn ? (v-mn)/(mx-mn) : 0.5; };
+  const sR = span(r=>r.recent), sS = span(r=>r.seasonAvg), sW = span(r=>r.winRate);
+  rows.forEach(r => r.power = 100 * (0.45*sR(r.recent) + 0.30*sS(r.seasonAvg) + 0.25*sW(r.winRate)));
+  rows.sort((a,b)=>b.power-a.power);
+  $("tblPower").innerHTML = `<tr><th>#</th><th>Team</th><th class="r">Power</th><th class="r">Last 4 avg</th><th class="r">Season avg</th><th class="r">Record</th></tr>` +
+    rows.map((r,i)=>`<tr><td class="num" style="font-family:var(--disp);font-weight:700">${i+1}</td>
+      <td>${esc(r.t.name)}<span class="sub" style="margin:0;display:block">${esc(r.t.owner||"")}</span></td>
+      <td class="r num" style="font-weight:700;color:var(--turf)">${r.power.toFixed(1)}</td>
+      <td class="r num">${r.recent?r.recent.toFixed(1):"—"}</td>
+      <td class="r num">${r.seasonAvg?r.seasonAvg.toFixed(1):"—"}</td>
+      <td class="r num">${r.t.wins||0}–${r.t.losses||0}</td></tr>`).join("");
+}
+
+/* ======== payouts ======== */
+const PRIZE_PCT = { champion:0.63, runnerUp:0.25, third:0.04, highScore:0.08 };
+function renderPayouts(){
+  const buyin = +$("payBuyin").value;
+  const n = state.teams.length;
+  const pot = buyin * n;
+  if (!state.payins) state.payins = {};
+  $("payPot").innerHTML = `Pot: <b class="num">${money(pot)}</b> (${n} × ${money(buyin)})`;
+
+  // Buy-ins collected
+  $("tblPayIn").innerHTML = `<tr><th>Team</th><th class="r">Owes</th><th class="r">Paid?</th></tr>` +
+    state.teams.map(t => `<tr><td>${esc(t.name)}<span class="sub" style="margin:0;display:block">${esc(t.owner||"")}</span></td>
+      <td class="r num">${money(buyin)}</td>
+      <td class="r"><input type="checkbox" data-payin="${t.rosterId}"${state.payins[t.rosterId]?" checked":""}${commish?"":" disabled"} aria-label="Paid ${esc(t.name)}"></td></tr>`).join("");
+  const collected = state.teams.filter(t => state.payins[t.rosterId]).length * buyin;
+  // Prizes owed — from current standings leaders and season high score
+  const bySeed = [...state.teams].sort((a,b)=> ((b.wins||0)-(a.wins||0)) || ((b.fpts||0)-(a.fpts||0)));
+  const champ = bySeed[0], runner = bySeed[1], third = bySeed[2];
+  // regular-season high score = highest single week this season
+  const cur = (state.weekScores||[]).filter(x=>String(x.season)===String(state.season));
+  const hiWeek = cur.sort((a,b)=>b.points-a.points)[0];
+  const hiTeam = hiWeek ? state.teams.find(t=>t.name===hiWeek.team) : null;
+  const line = (lbl, pct, team, extra) => `<tr><td>${lbl}</td>
+    <td>${team?esc(team.name):'<span class="sub">TBD</span>'}${extra?` <span class="sub">${extra}</span>`:""}</td>
+    <td class="r num" style="font-weight:700;color:var(--turf)">${money(pot*pct)}</td>
+    <td class="r sub">${Math.round(pct*100)}%</td></tr>`;
+  $("tblPayOut").innerHTML = `<tr><th>Prize</th><th>Current leader</th><th class="r">Payout</th><th class="r">Share</th></tr>` +
+    line("Champion", PRIZE_PCT.champion, champ) +
+    line("Runner-up", PRIZE_PCT.runnerUp, runner) +
+    line("Third place", PRIZE_PCT.third, third) +
+    line("Reg-season high score", PRIZE_PCT.highScore, hiTeam, hiWeek?`${hiWeek.points.toFixed(1)} · Wk ${hiWeek.week}`:"") +
+    `<tr><td colspan="2" style="font-weight:700">Collected so far</td><td class="r num" style="font-weight:700">${money(collected)} / ${money(pot)}</td><td></td></tr>`;
+}
+function bindPayouts(){
+  $("payBuyin").onchange = () => { if (state) { state.buyin = +$("payBuyin").value; persist(); } renderPayouts(); };
+  $("tab-payouts").addEventListener("change", async e => {
+    const cb = e.target.closest("input[data-payin]"); if (!cb) return;
+    if (!commish){ renderPayouts(); return; }
+    if (!state.payins) state.payins = {};
+    if (cb.checked) state.payins[cb.dataset.payin] = true; else delete state.payins[cb.dataset.payin];
+    persist(); renderPayouts();
+  });
+}
+
 function renderDraft(){
   renderDraftRoom();
   if (!state.rookieDraft || !state.rookieDraft.length) {
     $("tblDraft").innerHTML = `<tr><td style="color:var(--ink-soft)">No Sleeper rookie draft synced yet for ${esc(state.season)}.</td></tr>`;
+    renderArchive();
     return;
   }
   $("tblDraft").innerHTML = `<tr><th>Pick</th><th class="r">Value</th><th>Player</th><th>Pos</th><th>Team</th></tr>` +
     state.rookieDraft.map(p => `<tr><td class="num" style="font-family:var(--disp);font-weight:700">${esc(p.pick)}</td>
       <td class="r num" style="color:var(--turf);font-weight:600">${money(p.value)}</td>
       <td>${esc(p.player)}</td><td><span class="pos">${esc(p.pos||"—")}</span></td><td>${esc(p.team||"")}</td></tr>`).join("");
+  renderArchive();
+}
+function renderArchive(){
+  const arch = state.draftArchive || [];
+  const sel = $("archiveSeason");
+  if (!arch.length){ sel.innerHTML = ""; $("tblArchive").innerHTML = `<tr><td style="color:var(--ink-soft)">No draft history yet — hit Sync with Sleeper.</td></tr>`; return; }
+  if (sel.options.length !== arch.length){ sel.innerHTML = arch.map((d,i)=>`<option value="${i}">${esc(d.season)} season</option>`).join(""); sel.selectedIndex = 0; }
+  const idx = sel.selectedIndex < 0 ? 0 : sel.selectedIndex;
+  const d = arch[Math.min(idx, arch.length-1)];
+  const rows = [...d.picks].sort((a,b)=>{
+    if (a.type !== b.type) return a.type === "rookie" ? -1 : 1;
+    if (a.type === "rookie") return (a.round-b.round) || (a.slot-b.slot);
+    return (b.value-a.value);
+  }).map(pk => `<tr>
+    <td>${pk.type==="rookie" ? `<span class="num" style="font-family:var(--disp);font-weight:700">${esc(pk.pick||"")}</span>` : `<span class="tag">AUCT</span>`}</td>
+    <td class="r num" style="color:var(--turf);font-weight:600">${money(pk.value)}</td>
+    <td>${esc(pk.player)}</td><td><span class="pos">${esc(pk.pos||"—")}</span></td><td>${esc(pk.team||"")}</td></tr>`).join("");
+  $("tblArchive").innerHTML = `<tr><th>Pick</th><th class="r">Value</th><th>Player</th><th>Pos</th><th>Drafted by</th></tr>` + rows;
 }
 
 function renderStand(){
@@ -1224,12 +1530,13 @@ function buildCapReportHTML(){
 function switchTab(tab){
   currentTab = tab;
   document.querySelectorAll("#nav button").forEach(b => b.classList.toggle("on", b.dataset.tab === tab));
-  ["cap","teams","keep","faab","trades","draft","stand","office","rules"].forEach(t => $("tab-"+t).hidden = t !== tab);
+  ["cap","teams","keep","faab","trades","draft","stand","records","power","payouts","office","rules"].forEach(t => $("tab-"+t).hidden = t !== tab);
   ({cap:()=>{renderCap();renderDates();}, teams:renderTeam, keep:renderKeep, faab:renderFaab,
     trades:renderTrades, draft:()=>{renderBigBoard();renderDraft();},
-    stand:()=>{renderStand();renderHistory();}, office:renderOffice}[tab] || (()=>{}))();
+    stand:()=>{renderStand();renderHistory();}, records:renderRecords, power:renderPower,
+    payouts:renderPayouts, office:renderOffice}[tab] || (()=>{}))();
 }
-function renderAll(){ renderHeader(); renderCap(); renderDates(); renderTeam(); renderKeep(); renderFaab(); renderTrades(); renderBigBoard(); renderDraft(); renderStand(); renderHistory(); renderOffice(); switchTab(currentTab); }
+function renderAll(){ renderHeader(); renderCap(); renderDates(); renderTeam(); renderKeep(); renderFaab(); renderTrades(); renderBigBoard(); renderDraft(); renderStand(); renderHistory(); renderRecords(); renderPower(); renderPayouts(); renderOffice(); switchTab(currentTab); }
 
 $("lockBadge").onclick = async () => {
   if (commish){ setCommish(false); renderAll(); return; }
@@ -1274,9 +1581,16 @@ $("importFile").onchange = async e => {
   if (!state.history) state.history = [];
   if (!state.emails) state.emails = {};
   if (!state.audit) state.audit = [];
+  if (!state.weekScores) state.weekScores = [];
+  if (!state.games) state.games = [];
+  if (!state.draftArchive) state.draftArchive = [];
+  if (!state.payins) state.payins = {};
+  if (state.buyin) $("payBuyin").value = String(state.buyin);
   $("standSeason").textContent = state.season;
   setCommish(false);
-  bindTeams(); bindKeep(); bindDates(); bindTrades(); bindBigBoard(); bindOffice();
+  bindTeams(); bindKeep(); bindDates(); bindTrades(); bindBigBoard(); bindOffice(); bindPayouts();
+  $("archiveSeason").onchange = renderArchive;
+  $("rivA").onchange = renderRivalry; $("rivB").onchange = renderRivalry;
   renderAll();
   setStatus("ok", state.syncedAt ? `Last Sleeper sync ${new Date(state.syncedAt).toLocaleString()}` : `Showing ${state.source} · hit Sync with Sleeper for live numbers`);
 
