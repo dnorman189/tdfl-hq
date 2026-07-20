@@ -366,8 +366,8 @@ const FAAB_BUDGET = 100;
 /* ======== SUPABASE CONFIG — paste your project's values here ========
    Supabase dashboard → Settings → API. Run supabase-setup.sql first.
    Leave blank to fall back to per-device browser storage.            */
-const SUPABASE_URL = "https://mhzplkmolqngekboxuyh.supabase.co";      // e.g. "https://abcdefgh.supabase.co"
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1oenBsa21vbHFuZ2VrYm94dXloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ1NjI0OTksImV4cCI6MjEwMDEzODQ5OX0.5iNvjR9h52PLYWYfJdsbKM5D10SHs8nV7a44Yt0bYU4"; // the long "anon public" key
+const SUPABASE_URL = "";      // e.g. "https://abcdefgh.supabase.co"
+const SUPABASE_ANON_KEY = ""; // the long "anon public" key
 
 /* ======== COMMISSIONER PIN ========
    Anyone can view; editing (salaries, keepers, dates, draft, emails) is locked
@@ -528,10 +528,22 @@ function logSalaryChange(pid, name, team, from, to){
 
 /* ======== Sleeper sync engine ======== */
 const API = "https://api.sleeper.app/v1";
-async function j(url){ const r = await fetch(url); if(!r.ok) throw new Error(r.status + " " + url); return r.json(); }
+// Throws a tagged error so callers can tell a true network/CORS failure (fetch
+// itself rejected — no response reached us) apart from an HTTP error like a 404.
+async function j(url){
+  let r;
+  try { r = await fetch(url); }
+  catch(netErr){ const e = new Error("network"); e.kind = "network"; e.url = url; throw e; }
+  if (!r.ok){ const e = new Error(r.status + " " + url); e.kind = "http"; e.status = r.status; e.url = url; throw e; }
+  return r.json();
+}
+// Soft version for optional history: returns fallback instead of throwing.
+async function jSoft(url, fallback){ try { return await j(url); } catch(e){ return fallback; } }
 
 async function syncSleeper(){
   const btn = $("syncBtn"); btn.disabled = true;
+  $("netBanner").style.display = "none";
+  let syncedOk = false;
   setStatus("busy", "Syncing with Sleeper…");
   try {
     // 1. league chain (walk back through prior seasons for acquisition history)
@@ -554,9 +566,9 @@ async function syncSleeper(){
         j(`${API}/league/${lg.league_id}/users`).catch(()=>[]),
         j(`${API}/league/${lg.league_id}/rosters`).catch(()=>[]) ]);
       const lgUserById = Object.fromEntries(lgUsers.map(u => [u.user_id, u]));
-      const drafts = await j(`${API}/league/${lg.league_id}/drafts`);
+      const drafts = await jSoft(`${API}/league/${lg.league_id}/drafts`, []);
       for (const d of drafts) {
-        const picks = await j(`${API}/draft/${d.draft_id}/picks`);
+        const picks = await jSoft(`${API}/draft/${d.draft_id}/picks`, []);
         const dat = d.start_time || d.created || 0; // drafts precede in-season moves
         if (d.type === "auction") {
           for (const p of picks) if (p.player_id) acq[p.player_id] = { season: +lg.season, base: +((p.metadata && p.metadata.amount) || 1), src: "Auction", at: dat };
@@ -663,12 +675,30 @@ async function syncSleeper(){
     state.source = "Sleeper";
     state.syncedAt = new Date().toISOString();
     await persist();
-    renderAll();
-    setStatus("ok", `Synced from Sleeper · ${new Date().toLocaleString()}`);
+    syncedOk = true;   // data is in and saved; anything after this is display-only
   } catch(e) {
-    console.error(e);
-    $("netBanner").style.display = "block";
-    setStatus("err", "Sync failed — showing " + (state.syncedAt ? "last synced data" : "spreadsheet snapshot"));
+    console.error("Sleeper sync error:", e);
+    if (e.kind === "network") {
+      // fetch() itself rejected — genuine connectivity or CORS problem.
+      $("netBanner").innerHTML = "Couldn't reach Sleeper (network or CORS). If you're opening the file directly with a <code>file://</code> path, that can trigger this — host it (GitHub Pages, Netlify) and try again. If it's already hosted and this persists, Sleeper's API may be blocking the request; open the browser console and share the error.";
+      $("netBanner").style.display = "block";
+      setStatus("err", "Network error reaching Sleeper — " + (state.syncedAt ? "showing last synced data" : "showing snapshot"));
+    } else if (e.kind === "http") {
+      const hint = e.status === 404 ? "League not found — check the league ID is correct and the season has started." : `Sleeper returned ${e.status}.`;
+      $("netBanner").innerHTML = `Sync stopped: ${hint} <span style="opacity:.7">(${esc(e.url||"")})</span>`;
+      $("netBanner").style.display = "block";
+      setStatus("err", hint);
+    } else {
+      $("netBanner").textContent = "Sync hit an unexpected error: " + (e.message || e) + ". Open the console for details.";
+      $("netBanner").style.display = "block";
+      setStatus("err", "Sync failed — " + (state.syncedAt ? "showing last synced data" : "showing snapshot"));
+    }
+  }
+  // Render outside the fetch try/catch: a display glitch must never look like a
+  // failed sync or roll back data that already saved.
+  if (syncedOk) {
+    try { renderAll(); setStatus("ok", `Synced from Sleeper · ${new Date().toLocaleString()}`); }
+    catch(rErr){ console.error("Post-sync render error:", rErr); setStatus("ok", `Synced · reload if the view looks off`); }
   }
   btn.disabled = false;
 }
@@ -958,6 +988,7 @@ function bindDates(){
 const trade = { a: 0, b: 1, pa: new Set(), pb: new Set() };
 function tradeTable(el, teamIdx, sel){
   const t = state.teams[teamIdx];
+  if (!t || !t.players){ el.innerHTML = `<tr><td class="sub" style="padding:10px">Select a team.</td></tr>`; return; }
   el.innerHTML = `<tr><th></th><th>Pos</th><th>Player</th><th class="r">Salary</th></tr>` +
     [...t.players].sort((x,y)=>playerSalary(y)-playerSalary(x)).map(p => {
       const k = p.pid || p.name;
@@ -968,11 +999,16 @@ function tradeTable(el, teamIdx, sel){
     }).join("");
 }
 function renderTrades(){
+  const n = state.teams.length;
+  // Keep the selected teams in range after a sync changes the roster count.
+  if (trade.a >= n) trade.a = 0;
+  if (trade.b >= n) trade.b = Math.min(1, n - 1);
   $("trA").innerHTML = state.teams.map((t,i)=>`<option value="${i}"${i===trade.a?" selected":""}>${esc(t.name)}</option>`).join("");
   $("trB").innerHTML = state.teams.map((t,i)=>`<option value="${i}"${i===trade.b?" selected":""}>${esc(t.name)}</option>`).join("");
   tradeTable($("tblTrA"), trade.a, trade.pa);
   tradeTable($("tblTrB"), trade.b, trade.pb);
   const tA = state.teams[trade.a], tB = state.teams[trade.b];
+  if (!tA || !tB){ $("tradeSummary").innerHTML = `<span>Need at least two teams to compare.</span>`; return; }
   const sum = (t, set) => t.players.filter(p => set.has(p.pid || p.name)).reduce((s,p)=>s+playerSalary(p),0);
   const capSel = (t, set) => t.players.filter(p => set.has(p.pid || p.name) && countsAgainstCap(p)).reduce((s,p)=>s+playerSalary(p),0);
   const outA = sum(tA, trade.pa), outB = sum(tB, trade.pb);
