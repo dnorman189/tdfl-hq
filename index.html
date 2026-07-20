@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TDFL — The Dynasty League Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0E1B2C; --ink-soft:#3C4C61; --paper:#F4F5F1; --card:#FFFFFF;
+  --line:#D8DCD4; --turf:#1E7A4C; --turf-soft:#E3F0E8; --flag:#C23B2B;
+  --flag-soft:#F8E7E3; --chalk:#EDEFE9; --gold:#C79A3B; --radius:10px;
+  --disp:'Barlow Condensed',sans-serif; --body:'IBM Plex Sans',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5}
+button{font-family:inherit;cursor:pointer}
+input,select{font-family:inherit;font-size:14px}
+.num{font-variant-numeric:tabular-nums}
+header{background:var(--ink);color:#fff;padding:18px 16px 0}
+.brand{max-width:1100px;margin:0 auto;display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.wordmark{font-family:var(--disp);font-weight:800;font-size:clamp(30px,6vw,44px);line-height:.9;letter-spacing:.5px;text-transform:uppercase}
+.wordmark small{display:block;font-weight:600;font-size:12px;letter-spacing:3px;color:#9DB2C9;margin-bottom:4px}
+.season-ctl{display:flex;align-items:center;gap:8px;padding-bottom:6px}
+.season-ctl label{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#9DB2C9}
+.mode-toggle{display:flex;border:1px solid #3B4E66;border-radius:8px;overflow:hidden}
+.lockbadge{background:transparent;border:1px solid #3B4E66;color:#9DB2C9;border-radius:8px;padding:6px 11px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap}
+.lockbadge.unlocked{background:var(--turf);border-color:var(--turf);color:#fff}
+.lockbadge:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.mode-toggle button{background:transparent;color:#9DB2C9;border:0;padding:7px 12px;font-family:var(--disp);font-weight:600;font-size:15px;letter-spacing:.5px;text-transform:uppercase}
+.mode-toggle button.on{background:#fff;color:var(--ink)}
+nav{max-width:1100px;margin:14px auto 0;display:flex;gap:2px;overflow-x:auto}
+nav button{background:transparent;border:0;color:#8FA5BD;font-family:var(--disp);font-weight:600;font-size:17px;letter-spacing:1px;text-transform:uppercase;padding:10px 13px;border-bottom:3px solid transparent;white-space:nowrap}
+nav button.on{color:#fff;border-color:var(--gold)}
+nav button:focus-visible,.mode-toggle button:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}
+main{max-width:1100px;margin:0 auto;padding:18px 12px 60px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:14px}
+h2{font-family:var(--disp);font-weight:700;font-size:24px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px}
+h3{font-family:var(--disp);font-weight:600;font-size:18px;letter-spacing:.5px;text-transform:uppercase;color:var(--ink-soft);margin:14px 0 6px}
+.sub{color:var(--ink-soft);font-size:13px;margin-bottom:10px}
+.statusline{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:12px;color:var(--ink-soft);margin-bottom:12px;flex-wrap:wrap}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--turf);margin-right:5px}
+.dot.err{background:var(--flag)} .dot.busy{background:var(--gold)}
+.btn{border:1px solid var(--ink);background:var(--ink);color:#fff;border-radius:8px;padding:7px 14px;font-weight:600;font-size:13px}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn.small{padding:4px 9px;font-size:12px}
+.btn.quiet{border-color:var(--line);background:#fff;color:var(--ink-soft)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.banner{background:var(--flag-soft);border:1px solid var(--flag);border-radius:var(--radius);padding:10px 14px;font-size:13px;margin-bottom:14px;display:none}
+.capgrid{display:grid;gap:8px}
+.caprow{display:grid;grid-template-columns:180px 1fr 150px;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:10px 14px;cursor:pointer}
+.caprow:hover{border-color:var(--ink-soft)}
+.caprow .team{font-family:var(--disp);font-weight:700;font-size:19px;line-height:1.05;text-transform:uppercase;letter-spacing:.3px}
+.caprow .team small{display:block;font-family:var(--body);font-weight:400;font-size:11px;letter-spacing:0;text-transform:none;color:var(--ink-soft)}
+.capbar{position:relative;height:26px;background:var(--chalk);border-radius:6px}
+.capbar .fill{position:absolute;left:0;top:0;bottom:0;background:var(--turf);border-radius:6px 0 0 6px;min-width:2px}
+.capbar .fill.over{background:var(--flag)}
+.capbar .tick{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink)}
+.capbar .tick.soft{background:none;border-left:2px dashed var(--ink-soft)}
+.capbar .ticklab{position:absolute;top:-16px;transform:translateX(-50%);font-size:10px;color:var(--ink-soft)}
+.capfigs{text-align:right}
+.capfigs .used{font-family:var(--disp);font-weight:700;font-size:22px}
+.capfigs .room{font-size:12px;color:var(--turf);font-weight:600}
+.capfigs .room.neg{color:var(--flag)}
+@media(max-width:640px){.caprow{grid-template-columns:1fr;gap:6px}.capfigs{text-align:left}}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{font-family:var(--disp);font-weight:600;font-size:14px;letter-spacing:1px;text-transform:uppercase;color:var(--ink-soft);text-align:left;padding:6px 8px;border-bottom:2px solid var(--ink)}
+td{padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+td.r,th.r{text-align:right}
+.pos{display:inline-block;font-family:var(--disp);font-weight:700;font-size:13px;letter-spacing:.5px;background:var(--chalk);border-radius:4px;padding:1px 7px;min-width:34px;text-align:center}
+.tag{display:inline-block;font-size:11px;font-weight:600;border-radius:4px;padding:1px 7px;background:var(--chalk);color:var(--ink-soft)}
+.tag.taxi{background:#EAF0F8;color:#2C4A73}
+.tag.ir{background:var(--flag-soft);color:var(--flag)}
+.tag.ovr{background:#F4ECD9;color:#8A6C1F}
+.tablewrap{overflow-x:auto}
+.formrow{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-top:6px}
+.field{display:flex;flex-direction:column;gap:3px}
+.field label{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--ink-soft);font-weight:600}
+.field input,.field select{border:1px solid var(--line);border-radius:7px;padding:7px 9px;background:#fff}
+.field input:focus,.field select:focus{outline:2px solid var(--ink);outline-offset:-1px}
+.salinput{width:70px;border:1px solid var(--line);border-radius:6px;padding:4px 6px;text-align:right}
+.faabgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.faabcard{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px}
+.faabcard .team{font-family:var(--disp);font-weight:700;font-size:17px;text-transform:uppercase}
+.faabcard .left{font-family:var(--disp);font-weight:800;font-size:30px;line-height:1}
+.faabcard .left.low{color:var(--flag)}
+.faabbar{height:8px;background:var(--chalk);border-radius:4px;margin:8px 0;overflow:hidden}
+.faabbar div{height:100%;background:var(--turf)}
+.keepbar{position:sticky;top:0;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:10px 14px;margin-bottom:10px;display:flex;gap:18px;flex-wrap:wrap;z-index:5}
+.keepbar b{font-family:var(--disp);font-size:22px}
+.rules h3{margin-top:18px}
+.rules ul{margin:6px 0 0 18px}
+.rules li{margin-bottom:4px}
+.prize{display:grid;grid-template-columns:1fr auto;max-width:360px;gap:4px 20px;font-size:14px}
+.prize b{font-family:var(--disp);font-size:16px}
+.chiprow{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.chip{display:inline-flex;align-items:center;gap:6px;background:var(--chalk);border:1px solid var(--line);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600}
+.chip b{font-family:var(--disp);font-size:15px}
+.chip.soon{background:#F4ECD9;border-color:var(--gold)}
+.chip.past{opacity:.5;text-decoration:line-through}
+.chip.champ{background:#F4ECD9;border-color:var(--gold);font-size:13px}
+.chip.pickchip{cursor:pointer;background:var(--turf-soft);border-color:var(--turf)}
+.chip.pickchip:hover{background:var(--turf);color:#fff}
+.tradegrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:760px){.tradegrid{grid-template-columns:1fr}}
+.bb-drafted td{opacity:.45;text-decoration:line-through}
+.clock{background:var(--ink);color:#fff;border-radius:var(--radius);padding:14px 16px;display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin:10px 0}
+.clock .pickno{font-family:var(--disp);font-weight:800;font-size:44px;line-height:1}
+.clock .otc{font-family:var(--disp);font-weight:700;font-size:24px;text-transform:uppercase;line-height:1.05}
+.clock .otc small{display:block;font-family:var(--body);font-weight:400;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#9DB2C9}
+.clock .slotval{margin-left:auto;font-family:var(--disp);font-weight:800;font-size:34px;color:var(--gold)}
+.orderrow{display:grid;grid-template-columns:56px 1fr;gap:8px;align-items:center;padding:4px 0}
+.orderrow .pk{font-family:var(--disp);font-weight:700;font-size:17px}
+.orderrow select{border:1px solid var(--line);border-radius:6px;padding:6px 8px;width:100%;max-width:320px}
+.boardrow td select{border:1px solid var(--line);border-radius:6px;padding:3px 6px;font-size:12px}
+.picked{color:var(--ink)}
+.onclock-row{background:#FBF6E8}
+.footer-note{max-width:1100px;margin:0 auto;padding:0 12px 30px;font-size:12px;color:var(--ink-soft)}
+dialog{border:1px solid var(--line);border-radius:var(--radius);padding:18px;max-width:420px}
+dialog::backdrop{background:rgba(14,27,44,.5)}
+@media (prefers-reduced-motion:no-preference){.capbar .fill{transition:width .4s ease}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="wordmark"><small id="hdrSub">TDFL · SLEEPER LEAGUE</small>The Dynasty League</div>
+    <div class="season-ctl">
+      <button id="lockBadge" class="lockbadge locked" title="Commissioner editing is locked. Click to unlock.">🔒 Read-only</button>
+      <label>Cap mode</label>
+      <div class="mode-toggle" id="modeToggle">
+        <button data-mode="auction" title="Veteran auction: $200 hard cap, taxi exempt, IR counts">Auction $200</button>
+        <button data-mode="season" title="2026 rule: $250 year-round cap, FAAB counts, IR &amp; taxi exempt">In-Season $250</button>
+      </div>
+    </div>
+  </div>
+  <nav id="nav">
+    <button data-tab="cap" class="on">Cap Sheet</button>
+    <button data-tab="teams">Rosters</button>
+    <button data-tab="keep">Keepers</button>
+    <button data-tab="faab">FAAB</button>
+    <button data-tab="trades">Trades</button>
+    <button data-tab="draft">Draft</button>
+    <button data-tab="stand">League</button>
+    <button data-tab="office">Office</button>
+    <button data-tab="rules">Rules</button>
+  </nav>
+</header>
+
+<main>
+  <div class="statusline">
+    <span id="syncStatus"><span class="dot"></span>Loading…</span>
+    <span>
+      <button class="btn small" id="syncBtn">Sync with Sleeper</button>
+      <button class="btn small quiet" id="exportBtn" title="Download the full league dataset as a JSON file">Export</button>
+      <button class="btn small quiet" id="importBtn" title="Load a league dataset exported from another device">Import</button>
+      <button class="btn small quiet" id="resetBtn" title="Discard synced data and overrides; reload the built-in spreadsheet snapshot">Reset</button>
+      <input type="file" id="importFile" accept="application/json" hidden>
+    </span>
+  </div>
+  <div class="banner" id="netBanner">
+    Sleeper can't be reached from inside this preview. Download the file and open it in your browser (or host it — GitHub Pages, Netlify, anything static) and the Sync button will pull live rosters, auction bids, FAAB, and rookie picks straight from Sleeper. Until then you're viewing the spreadsheet snapshot.
+  </div>
+
+  <section id="tab-cap">
+    <div class="card"><h2>League cap sheet</h2><p class="sub" id="capModeNote"></p>
+      <div id="dateChips" class="chiprow"></div>
+      <details style="margin-top:8px"><summary style="cursor:pointer;font-size:12px;color:var(--ink-soft)">Set league dates (Commissioner)</summary>
+        <div class="formrow" id="dateForm">
+          <div class="field"><label>Fees due</label><input type="date" data-date="feeDue"></div>
+          <div class="field"><label>Rookie draft</label><input type="date" data-date="rookieDraft"></div>
+          <div class="field"><label>Veteran auction</label><input type="date" data-date="auction"></div>
+          <div class="field"><label>Taxi lock</label><input type="date" data-date="taxiLock"></div>
+          <div class="field"><label>Trade deadline</label><input type="date" data-date="tradeDeadline"></div>
+        </div>
+        <p class="sub" style="margin:6px 0 0">Roster trim to 25 is computed automatically: two weeks before the auction date (Art. IV §4.2.2).</p>
+      </details>
+    </div>
+    <div class="capgrid" id="capGrid"></div>
+  </section>
+
+  <section id="tab-trades" hidden>
+    <div class="card">
+      <h2>Trade analyzer</h2>
+      <p class="sub">Check the players moving each way and see both cap sheets after the deal — before anyone hits send in Sleeper. Contracts travel with the player (trades keep the existing salary; only FAAB and drafts set new ones). Remember: no in-week trading once the first NFL game kicks off. Draft picks can be included in the real trade; note them below, they carry no salary until made.</p>
+      <div id="tradeSummary" class="keepbar" style="position:static"></div>
+      <div class="tradegrid">
+        <div>
+          <div class="formrow"><div class="field"><label>Team A sends</label><select id="trA"></select></div></div>
+          <div class="tablewrap"><table id="tblTrA"></table></div>
+        </div>
+        <div>
+          <div class="formrow"><div class="field"><label>Team B sends</label><select id="trB"></select></div></div>
+          <div class="tablewrap"><table id="tblTrB"></table></div>
+        </div>
+      </div>
+      <div class="formrow"><div class="field" style="flex:1;min-width:240px"><label>Picks / notes in the deal</label><input id="trNote" placeholder="e.g. A adds 2027 1st, B adds 2027 3rd"></div>
+      <button class="btn ghost small" id="trClear">Clear</button></div>
+    </div>
+  </section>
+
+  <section id="tab-teams" hidden>
+    <div class="card">
+      <h2>Rosters &amp; contracts</h2>
+      <p class="sub">Salary = auction bid / rookie slot / FAAB bid, +$5 for every season kept since. Edit a salary to override the computed number (overrides survive syncs and are tagged <span class="tag ovr">manual</span>).</p>
+      <div class="formrow"><div class="field"><label>Team</label><select id="teamSelect"></select></div></div>
+      <div id="teamCapSummary" class="sub" style="margin-top:10px"></div>
+      <h3>Active roster</h3><div class="tablewrap"><table id="tblActive"></table></div>
+      <h3>Taxi squad <span class="tag taxi">cap-exempt</span></h3><div class="tablewrap"><table id="tblTaxi"></table></div>
+      <h3>Injured reserve <span class="tag ir">cap-exempt in-season (2026)</span></h3><div class="tablewrap"><table id="tblIR"></table></div>
+    </div>
+  </section>
+
+  <section id="tab-keep" hidden>
+    <div class="keepbar" id="keepSummary"></div>
+    <div class="card">
+      <h2>Keeper planner</h2>
+      <p class="sub">Pick a team, check who you're keeping. Next-year salary is current salary +$5. The bar above totals your kept contracts against the $200 auction cap so you can see the room you'll walk into the draft with. Taxi contracts are shown but excluded from the cap total (Art. IV §4.1.1). Plans save automatically and are visible to the whole league.</p>
+      <div class="formrow"><div class="field"><label>Team</label><select id="keepTeamSelect"></select></div>
+      <button class="btn small quiet" id="keepAll">Keep all</button>
+      <button class="btn small quiet" id="keepNone">Keep none</button></div>
+      <div class="tablewrap" style="margin-top:10px"><table id="tblKeep"></table></div>
+    </div>
+  </section>
+
+  <section id="tab-faab" hidden>
+    <div class="card"><h2>FAAB budgets</h2>
+    <p class="sub" id="faabNote">$100 per team per season (Art. IV §4.3). Spent totals come from Sleeper waiver transactions; under the 2026 rule the winning bid becomes the player's salary.</p></div>
+    <div class="faabgrid" id="faabGrid"></div>
+  </section>
+
+  <section id="tab-draft" hidden>
+    <div class="card">
+      <h2>Rookie big board</h2>
+      <p class="sub">The league's shared pre-draft rankings. Add prospects, order them, argue about it in the group chat. On draft night the board feeds the room below — the top available names appear as one-tap picks, and drafted players get crossed off automatically.</p>
+      <div class="formrow">
+        <div class="field"><label>Prospect</label><input id="bbName" placeholder="Name" autocomplete="off"></div>
+        <div class="field"><label>Pos</label><select id="bbPos"><option>RB</option><option>WR</option><option>QB</option><option>TE</option></select></div>
+        <div class="field" style="flex:1;min-width:160px"><label>Note</label><input id="bbNote" placeholder="school, comp, injury flag…"></div>
+        <button class="btn" id="bbAdd">Add</button>
+      </div>
+      <div class="tablewrap" style="margin-top:10px"><table id="tblBB"></table></div>
+    </div>
+    <div class="card" id="draftRoom">
+      <h2>Rookie draft room</h2>
+      <p class="sub">3 rounds, linear — the 1.01 opens every round (Art. IV §4.2.2). Contract values are slotted automatically: 1.01 $20 sliding to $10, round 2 $5, round 3 $1. Picks land on the owner's taxi squad when there's room, otherwise the active roster. Rosters expand +3 during the draft; trim to 25 two weeks before the veteran auction.</p>
+      <div id="draftRoomBody"></div>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">Synced Sleeper draft results</h3>
+      <p class="sub" id="draftNote">If you run the draft in Sleeper instead, Sync pulls the picks and prices them here.</p>
+      <div class="tablewrap"><table id="tblDraft"></table></div>
+    </div>
+  </section>
+
+  <section id="tab-stand" hidden>
+    <div class="card">
+      <h2>Standings — <span id="standSeason"></span></h2>
+      <p class="sub" id="standNote">Win % first, Points For breaks ties (Art. III). Top 6 make the playoffs; top 2 get the Week 15 bye.</p>
+      <div class="tablewrap"><table id="tblStand"></table></div>
+    </div>
+    <div class="card">
+      <h2>Franchise history</h2>
+      <p class="sub" id="histNote">Every season in the league's Sleeper chain — champions, finishes, and all-time owner records. Fills in on Sync.</p>
+      <div id="histBanners" class="chiprow"></div>
+      <h3>All-time records</h3>
+      <div class="tablewrap"><table id="tblAllTime"></table></div>
+      <div id="histSeasons"></div>
+    </div>
+  </section>
+
+  <section id="tab-office" hidden>
+    <div class="card">
+      <h2>League office</h2>
+      <p class="sub" id="officeLockNote"></p>
+      <h3>Team emails</h3>
+      <p class="sub">Registered addresses for the weekly cap report. Owners' cap sheets and over-cap flags go out every Sunday night; use "Send now" to fire one immediately.</p>
+      <div class="tablewrap"><table id="tblEmails"></table></div>
+      <div class="formrow" style="margin-top:8px">
+        <button class="btn small" id="emailSendNow" title="Send the cap report to every registered address right now">Send cap report now</button>
+        <span class="sub" id="emailSendNote" style="margin:0;align-self:center"></span>
+      </div>
+
+      <h3>Contract change log</h3>
+      <p class="sub">Every manual salary override, logged and attributed. This is the paper trail when a contract gets disputed in-season.</p>
+      <div class="tablewrap"><table id="tblAudit"></table></div>
+    </div>
+  </section>
+
+  <section id="tab-rules" hidden>
+    <div class="card rules">
+      <h2>Constitution quick reference</h2>
+      <p class="sub">Condensed from the TDFL Constitution (updated 9/30/2024). The full document governs; this is the cheat sheet.</p>
+      <h3>Money</h3>
+      <div class="prize">
+        <span>Buy-in (2025 on)</span><b class="num">$100</b>
+        <span>Champion (63%)</span><b class="num">$750</b>
+        <span>Runner-up (25%)</span><b class="num">$300</b>
+        <span>Third place (4%)</span><b class="num">$50</b>
+        <span>Reg-season high score (8%)</span><b class="num">$100</b>
+      </div>
+      <h3>Cap &amp; contracts</h3>
+      <ul>
+        <li>$200 hard cap enforced at the veteran auction draft.</li>
+        <li>Every kept player's salary rises <b>+$5 per season</b> retained.</li>
+        <li>Rookie picks carry fixed salaries: 1.01 $20 → 1.06–1.12 $10; Rd 2 $5; Rd 3 $1.</li>
+        <li><b>2026 amendment:</b> $250 cap enforced year-round; FAAB winning bid becomes the player's salary; IR players don't count; auction cap stays $200.</li>
+        <li>Taxi contracts never count against the cap at the start of the year.</li>
+      </ul>
+      <h3>Rosters</h3>
+      <ul>
+        <li>25 active · 2 IR · 5 taxi. Starters: 1 QB, 2 RB, 2 WR, 1 TE, 2 FLEX, 1 DEF, 1 PK.</li>
+        <li>Taxi: rookies and 1-year vets only; locks at the regular season; no returning once promoted mid-year.</li>
+        <li>Players lock at their individual kickoff.</li>
+      </ul>
+      <h3>Transactions</h3>
+      <ul>
+        <li>FAAB: $100/year, blind bids, no min/max, ties broken by waiver order; free-for-all after the run.</li>
+        <li>Trades: never voted on — they stand unless collusion is found. No in-week trading after the first NFL kickoff; deadline applies.</li>
+      </ul>
+      <h3>Playoffs</h3>
+      <ul><li>6 teams by win %, Points For breaks ties. Top 2 seeds bye Week 15. No re-seeding.</li></ul>
+      <h3>Governance</h3>
+      <ul>
+        <li>Amendments: 12/12 to apply this year; 7/12 for next season; ties fail. "Current year" runs championship to championship (Amendment 6.1 "Archibald").</li>
+        <li>Commissioner: Dex Norman · Co-Commissioner: Sean Deeks. Mistakes reported within 24 hours.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<p class="footer-note" id="footNote">League data is shared — everyone opening this hub sees the same sheet. Sync pulls live from Sleeper; salary overrides and keeper plans persist on top of every sync.</p>
+
+<dialog id="confirmDlg">
+  <h2 style="font-family:var(--disp);text-transform:uppercase;font-size:20px;margin-bottom:8px" id="dlgTitle">Confirm</h2>
+  <p id="dlgMsg" style="margin-bottom:14px;font-size:14px;color:var(--ink-soft)"></p>
+  <div style="display:flex;gap:8px;justify-content:flex-end">
+    <button class="btn ghost" id="dlgNo">Cancel</button>
+    <button class="btn" id="dlgYes" style="background:var(--flag);border-color:var(--flag)">Confirm</button>
+  </div>
+</dialog>
+
+<dialog id="pinDlg">
+  <h2 style="font-family:var(--disp);text-transform:uppercase;font-size:20px;margin-bottom:4px">🔒 Commissioner mode</h2>
+  <p style="margin-bottom:12px;font-size:14px;color:var(--ink-soft)">Enter the PIN to unlock editing. Anyone can view without it.</p>
+  <input id="pinInput" type="password" inputmode="numeric" maxlength="8" autocomplete="off"
+    style="width:100%;border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:20px;letter-spacing:6px;text-align:center;margin-bottom:8px">
+  <p id="pinErr" style="color:var(--flag);font-size:13px;min-height:18px;margin-bottom:8px"></p>
+  <div style="display:flex;gap:8px;justify-content:flex-end">
+    <button class="btn ghost" id="pinCancel">Cancel</button>
+    <button class="btn" id="pinOk">Unlock</button>
+  </div>
+</dialog>
+
+<script>
+/* ======== embedded snapshot from TheDynastyLeague.xlsx ======== */
+const SNAPSHOT = {"season":"2025","leagueId":"1312241106456428544","teams":[{"name":"The Jackson 25","owner":"dnorman189","rosterId":1,"faabSpent":45,"players":[{"pid":"11604","name":"Brock Bowers","pos":"","slot":"taxi","base":21,"ky":1,"salary":26,"src":"Auction"},{"pid":"11584","name":"Bucky Irving","pos":"","slot":"active","base":1,"ky":1,"salary":6,"src":"Auction"},{"pid":"4881","name":"Lamar Jackson","pos":"","slot":"active","base":20,"ky":1,"salary":25,"src":"Auction"},{"pid":"11631","name":"Brian Thomas","pos":"","slot":"taxi","base":5,"ky":1,"salary":10,"src":"Auction"},{"pid":"11637","name":"Keon Coleman","pos":"","slot":"taxi","base":4,"ky":1,"salary":9,"src":"Auction"},{"pid":"9500","name":"Josh Downs","pos":"","slot":"active","base":4,"ky":1,"salary":9,"src":"Auction"},{"pid":"11635","name":"Ladd McConkey","pos":"","slot":"taxi","base":3,"ky":1,"salary":8,"src":"Auction"},{"pid":"11564","name":"Drake Maye","pos":"","slot":"active","base":1,"ky":1,"salary":6,"src":"Auction"},{"pid":"12517","name":"Colston Loveland","pos":"TE","slot":"taxi","base":10,"ky":1,"salary":10,"src":"Rookie"},{"pid":"4018","name":"Joe Mixon","pos":"","slot":"ir","base":14,"ky":1,"salary":19,"src":"Auction"},{"pid":"4037","name":"Chris Godwin","pos":"","slot":"ir","base":3,"ky":1,"salary":8,"src":"Auction"},{"pid":"12508","name":"Jaxson Dart","pos":"QB","slot":"active","base":5,"ky":1,"salary":5,"src":"Rookie"},{"pid":"5892","name":"David Montgomery","pos":"","slot":"active","base":7,"ky":1,"salary":12,"src":"Auction"},{"pid":"5967","name":"Tony Pollard","pos":"","slot":"active","base":8,"ky":1,"salary":13,"src":"Auction"},{"pid":"12510","name":"Jalen Milroe","pos":"QB","slot":"active","base":1,"ky":1,"salary":1,"src":"Rookie"}]},{"name":"Taylor Made","owner":"ThaDeekz","rosterId":2,"faabSpent":45,"players":[{"pid":"4866","name":"Saquon Barkley","pos":"","slot":"active","base":36,"ky":1,"salary":41,"src":"Auction"},{"pid":"2216","name":"Mike Evans","pos":"","slot":"active","base":17,"ky":1,"salary":22,"src":"Auction"},{"pid":"11624","name":"Xavier Worthy","pos":"","slot":"taxi","base":10,"ky":1,"salary":15,"src":"Auction"},{"pid":"12501","name":"Matthew Golden","pos":"WR","slot":"taxi","base":10,"ky":1,"salary":10,"src":"Rookie"},{"pid":"11533","name":"Brandon Aubrey","pos":"","slot":"active","base":1,"ky":1,"salary":6,"src":"Auction"},{"pid":"4892","name":"Baker Mayfield","pos":"","slot":"active","base":1,"ky":1,"salary":6,"src":"Auction"},{"pid":"BUF","name":"BUF","pos":"DEF","slot":"active","base":1,"ky":1,"salary":6,"src":"Auction"},{"pid":"12490","name":"Bhayshul Tuten","pos":"RB","slot":"taxi","base":5,"ky":1,"salary":5,"src":"Rookie"},{"pid":"12506","name":"Harold Fannin","pos":"TE","slot":"taxi","base":1,"ky":1,"salary":1,"src":"Rookie"}]},{"name":"Visigoths","owner":"vinsane38","rosterId":3,"faabSpent":35,"players":[{"pid":"7547","name":"Amon-Ra St. Brown","pos":"","slot":"active","base":53,"ky":1,"salary":58,"src":"Auction"},{"pid":"8112","name":"Drake London","pos":"","slot":"active","base":34,"ky":1,"salary":39,"src":"Auction"},{"pid":"12530","name":"Travis Hunter","pos":"WR","slot":"taxi","base":14,"ky":0,"salary":14,"src":"Rookie"},{"pid":"12489","name":"RJ Harvey","pos":"RB","slot":"active","base":12,"ky":1,"salary":12,"src":"Rookie"},{"pid":"12518","name":"Tyler Warren","pos":"TE","slot":"taxi","base":10,"ky":1,"salary":10,"src":"Rookie"},{"pid":"9756","name":"Jordan Addison","pos":"","slot":"active","base":3,"ky":1,"salary":8,"src":"Auction"},{"pid":"7594","name":"Chuba Hubbard","pos":"","slot":"active","base":2,"ky":1,"salary":7,"src":"Auction"},{"pid":"7591","name":"Justin Fields","pos":"","slot":"active","base":1,"ky":1,"salary":6,"src":"Auction"},{"pid":"9228","name":"Bryce Young","pos":"","slot":"active","base":1,"ky":1,"salary":6,"src":"Auction"},{"pid":"12469","name":"Dylan Sampson","pos":"RB","slot":"taxi","base":5,"ky":1,"salary":5,"src":"Rookie"},{"pid":"12533","name":"Jacory Croskey-Merritt","pos":"RB","slot":"taxi","base":1,"ky":1,"salary":1,"src":"Rookie"}]},{"name":"Lots O Pennies","owner":"rideordieATX","rosterId":4,"faabSpent":0,"players":[{"pid":"6794","name":"Justin Jefferson","pos":"","slot":"active","base":48,"ky":1,"salary":53,"src":"Auction"},{"pid":"8150","name":"Kyren Williams","pos":"","slot":"active","base":41,"ky":1,"salary":46,"src":"Auction"},{"pid":"8138","name":"James Cook","pos":"","slot":"active","base":29,"ky":1,"salary":34,"src":"Auction"},{"pid":"11560","name":"Caleb Williams","pos":"","slot":"active","base":9,"ky":1,"salary":14,"src":"Auction"},{"pid":"12498","name":"Mason Taylor","pos":"TE","slot":"active","base":5,"ky":1,"salary":5,"src":"Rookie"},{"pid":"12499","name":"Elic Ayomanor","pos":"WR","slot":"active","base":1,"ky":1,"salary":1,"src":"Rookie"}]},{"name":"OnlyDadz","owner":"JakeWaldrop","rosterId":5,"faabSpent":15,"players":[{"pid":"9493","name":"Puka Nacua","pos":"","slot":"active","base":29,"ky":0,"salary":29,"src":"Auction"},{"pid":"8130","name":"Trey McBride","pos":"","slot":"active","base":22,"ky":0,"salary":22,"src":"Auction"},{"pid":"12526","name":"Tetairoa McMillan","pos":"WR","slot":"taxi","base":10,"ky":0,"salary":10,"src":"Rookie"},{"pid":"11589","name":"Trey Benson","pos":"","slot":"taxi","base":6,"ky":0,"salary":6,"src":"Auction"},{"pid":"12522","name":"Cam Ward","pos":"QB","slot":"active","base":5,"ky":0,"salary":5,"src":"Rookie"},{"pid":"10229","name":"Rashee Rice","pos":"","slot":"active","base":4,"ky":0,"salary":4,"src":"Auction"},{"pid":"4137","name":"James Conner","pos":"","slot":"active","base":4,"ky":0,"salary":4,"src":"Auction"},{"pid":"11576","name":"Braelon Allen","pos":"","slot":"taxi","base":2,"ky":0,"salary":2,"src":"Auction"},{"pid":"11627","name":"Troy Franklin","pos":"","slot":"taxi","base":2,"ky":0,"salary":2,"src":"Auction"},{"pid":"3163","name":"Jared Goff","pos":"","slot":"active","base":2,"ky":0,"salary":2,"src":"Auction"},{"pid":"8148","name":"Jameson Williams","pos":"","slot":"active","base":2,"ky":0,"salary":2,"src":"Auction"},{"pid":"11600","name":"Ja'Tavion Sanders","pos":"","slot":"taxi","base":1,"ky":0,"salary":1,"src":"Auction"},{"pid":"12521","name":"Elijah Arroyo","pos":"TE","slot":"active","base":1,"ky":0,"salary":1,"src":"Rookie"},{"pid":"8408","name":"Jordan Mason","pos":"","slot":"active","base":1,"ky":0,"salary":1,"src":"Auction"}]},{"name":"TeamGPT","owner":"alibusoul","rosterId":6,"faabSpent":2,"players":[{"pid":"12527","name":"Ashton Jeanty","pos":"RB","slot":"taxi","base":20,"ky":1,"salary":20,"src":"Rookie"},{"pid":"4217","name":"George Kittle","pos":"","slot":"active","base":7,"ky":1,"salary":12,"src":"Auction"},{"pid":"11559","name":"Michael Penix","pos":"","slot":"taxi","base":1,"ky":1,"salary":6,"src":"Auction"},{"pid":"11650","name":"Luke McCaffrey","pos":"","slot":"taxi","base":1,"ky":1,"salary":6,"src":"Auction"},{"pid":"8111","name":"Cade Otton","pos":"","slot":"active","base":1,"ky":1,"salary":6,"src":"Auction"},{"pid":"12504","name":"Kaleb Johnson","pos":"RB","slot":"taxi","base":5,"ky":1,"salary":5,"src":"Rookie"},{"pid":"12505","name":"Jalen Royals","pos":"WR","slot":"taxi","base":1,"ky":1,"salary":1,"src":"Rookie"}]},{"name":"Donor Advised Fund","owner":"TexasTopG","rosterId":7,"faabSpent":52,"players":[{"pid":"8151","name":"Kenneth Walker","pos":"","slot":"active","base":37,"ky":1,"salary":42,"src":"Auction"},{"pid":"6803","name":"Brandon Aiyuk","pos":"","slot":"ir","base":25,"ky":1,"salary":30,"src":"Auction"},{"pid":"6801","name":"Tee Higgins","pos":"","slot":"active","base":17,"ky":1,"salary":22,"src":"Auction"},{"pid":"7090","name":"Darnell Mooney","pos":"","slot":"active","base":1,"ky":1,"salary":18,"src":"Auction"},{"pid":"6768","name":"Tua Tagovailoa","pos":"","slot":"active","base":7,"ky":1,"salary":12,"src":"Auction"},{"pid":"12514","name":"Emeka Egbuka","pos":"WR","slot":"active","base":10,"ky":1,"salary":10,"src":"Rookie"},{"pid":"10232","name":"Michael Wilson","pos":"","slot":"active","base":1,"ky":1,"salary":6,"src":"Auction"},{"pid":"11625","name":"Adonai Mitchell","pos":"","slot":"taxi","base":1,"ky":1,"salary":6,"src":"Auction"},{"pid":"5133","name":"Tyler Conklin","pos":"","slot":"active","base":1,"ky":1,"salary":6,"src":"Auction"},{"pid":"5947","name":"Jakobi Meyers","pos":"","slot":"active","base":1,"ky":1,"salary":6,"src":"Auction"},{"pid":"7571","name":"Rashod Bateman","pos":"","slot":"active","base":1,"ky":1,"salary":6,"src":"Auction"},{"pid":"7596","name":"Elijah Moore","pos":"","slot":"active","base":1,"ky":1,"salary":6,"src":"Auction"},{"pid":"96","name":"Aaron Rodgers","pos":"","slot":"active","base":1,"ky":1,"salary":6,"src":"Auction"},{"pid":"12509","name":"Tre' Harris","pos":"WR","slot":"taxi","base":5,"ky":1,"salary":5,"src":"Rookie"},{"pid":"1339","name":"Zach Ertz","pos":"","slot":"active","base":1,"ky":1,"salary":5,"src":""},{"pid":"11569","name":"Jarquez Hunter","pos":"RB","slot":"taxi","base":1,"ky":1,"salary":1,"src":"Rookie"}]},{"name":"Hawk Tua","owner":"Sunshine1855","rosterId":8,"faabSpent":2,"players":[{"pid":"4035","name":"Alvin Kamara","pos":"","slot":"active","base":19,"ky":1,"salary":24,"src":"Auction"},{"pid":"5045","name":"Courtland Sutton","pos":"","slot":"active","base":2,"ky":1,"salary":7,"src":"Auction"},{"pid":"6806","name":"J.K. Dobbins","pos":"","slot":"active","base":2,"ky":1,"salary":7,"src":"Auction"},{"pid":"11655","name":"Tyrone Tracy","pos":"","slot":"active","base":1,"ky":1,"salary":6,"src":"Auction"},{"pid":"12547","name":"Kyle Williams","pos":"WR","slot":"taxi","base":5,"ky":1,"salary":5,"src":"Rookie"},{"pid":"12487","name":"Terrance Ferguson","pos":"TE","slot":"taxi","base":1,"ky":1,"salary":1,"src":"Rookie"}]},{"name":"World's Greatest Penix","owner":"DWBIELIK","rosterId":9,"faabSpent":68,"players":[{"pid":"9509","name":"Bijan Robinson","pos":"","slot":"active","base":49,"ky":1,"salary":54,"src":"Auction"},{"pid":"9221","name":"Jahmyr Gibbs","pos":"","slot":"active","base":43,"ky":1,"salary":48,"src":"Auction"},{"pid":"2133","name":"Davante Adams","pos":"","slot":"active","base":21,"ky":1,"salary":26,"src":"Auction"},{"pid":"4033","name":"David Njoku","pos":"","slot":"active","base":1,"ky":1,"salary":6,"src":"Auction"}]},{"name":"Big Harri Olaves","owner":"jfbevo","rosterId":10,"faabSpent":5,"players":[{"pid":"7569","name":"Nico Collins","pos":"","slot":"active","base":27,"ky":1,"salary":32,"src":"Auction"},{"pid":"12507","name":"Omarion Hampton","pos":"RB","slot":"active","base":18,"ky":1,"salary":18,"src":"Rookie"},{"pid":"6770","name":"Joe Burrow","pos":"","slot":"active","base":11,"ky":1,"salary":16,"src":"Auction"},{"pid":"6790","name":"D'Andre Swift","pos":"","slot":"active","base":9,"ky":1,"salary":14,"src":"Auction"},{"pid":"9225","name":"Tank Bigsby","pos":"","slot":"active","base":1,"ky":1,"salary":6,"src":"Auction"},{"pid":"12484","name":"Jayden Higgins","pos":"WR","slot":"active","base":5,"ky":1,"salary":5,"src":"Rookie"},{"pid":"12483","name":"Jack Bech","pos":"WR","slot":"taxi","base":1,"ky":1,"salary":1,"src":"Rookie"}]},{"name":"casillasa2773","owner":"casillasa2773","rosterId":11,"faabSpent":45,"players":[{"pid":"11632","name":"Malik Nabers","pos":"","slot":"active","base":31,"ky":1,"salary":36,"src":"Auction"},{"pid":"4981","name":"Calvin Ridley","pos":"","slot":"active","base":12,"ky":1,"salary":17,"src":"Auction"},{"pid":"4199","name":"Aaron Jones","pos":"","slot":"active","base":10,"ky":1,"salary":15,"src":"Auction"},{"pid":"9224","name":"Chase Brown","pos":"","slot":"active","base":10,"ky":1,"salary":15,"src":"Auction"},{"pid":"5927","name":"Terry McLaurin","pos":"","slot":"active","base":7,"ky":1,"salary":12,"src":"Auction"},{"pid":"8137","name":"George Pickens","pos":"","slot":"active","base":6,"ky":1,"salary":11,"src":"Auction"},{"pid":"12457","name":"Jaydon Blue","pos":"RB","slot":"active","base":10,"ky":1,"salary":10,"src":"Rookie"},{"pid":"9488","name":"Jaxon Smith-Njigba","pos":"","slot":"active","base":5,"ky":1,"salary":10,"src":"Auction"},{"pid":"4988","name":"Nick Chubb","pos":"","slot":"active","base":3,"ky":1,"salary":8,"src":"Auction"},{"pid":"12492","name":"Pat Bryant","pos":"WR","slot":"active","base":5,"ky":1,"salary":5,"src":"Rookie"}]},{"name":"Commerford","owner":"Commerford","rosterId":12,"faabSpent":0,"players":[{"pid":"7564","name":"Ja'Marr Chase","pos":"","slot":"active","base":53,"ky":1,"salary":58,"src":"Auction"},{"pid":"12529","name":"TreVeyon Henderson","pos":"RB","slot":"active","base":16,"ky":1,"salary":16,"src":"Rookie"},{"pid":"7588","name":"Javonte Williams","pos":"","slot":"active","base":11,"ky":1,"salary":16,"src":"Auction"},{"pid":"11566","name":"Jayden Daniels","pos":"","slot":"active","base":4,"ky":1,"salary":9,"src":"Auction"},{"pid":"10222","name":"Jayden Reed","pos":"","slot":"active","base":2,"ky":1,"salary":7,"src":"Auction"},{"pid":"11638","name":"Ricky Pearsall","pos":"","slot":"active","base":1,"ky":1,"salary":6,"src":"Auction"},{"pid":"3214","name":"Hunter Henry","pos":"","slot":"active","base":1,"ky":1,"salary":6,"src":"Auction"},{"pid":"6783","name":"Jerry Jeudy","pos":"","slot":"active","base":1,"ky":1,"salary":6,"src":"Auction"},{"pid":"9484","name":"Tucker Kraft","pos":"","slot":"active","base":1,"ky":1,"salary":6,"src":"Auction"},{"pid":"12519","name":"Luther Burden","pos":"WR","slot":"active","base":5,"ky":1,"salary":5,"src":"Rookie"},{"pid":"12536","name":"Jaylin Noel","pos":"WR","slot":"active","base":1,"ky":1,"salary":1,"src":"Rookie"}]}]};
+
+const LEAGUE_ID = "1312241106456428544";
+const KEY = "tdfl-hub-v2";
+const FAAB_BUDGET = 100;
+
+/* ======== SUPABASE CONFIG — paste your project's values here ========
+   Supabase dashboard → Settings → API. Run supabase-setup.sql first.
+   Leave blank to fall back to per-device browser storage.            */
+const SUPABASE_URL = "";      // e.g. "https://abcdefgh.supabase.co"
+const SUPABASE_ANON_KEY = ""; // the long "anon public" key
+
+/* ======== COMMISSIONER PIN ========
+   Anyone can view; editing (salaries, keepers, dates, draft, emails) is locked
+   behind this PIN. Change it to whatever you and the co-commish agree on.      */
+const COMMISH_PIN = "1225";
+
+const sb = {
+  ok: () => !!(SUPABASE_URL && SUPABASE_ANON_KEY),
+  headers: (extra) => ({ apikey: SUPABASE_ANON_KEY, Authorization: "Bearer " + SUPABASE_ANON_KEY,
+    "Content-Type": "application/json", ...(extra||{}) }),
+  async get(){
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/league_state?id=eq.tdfl&select=data,rev`, { headers: sb.headers() });
+    const rows = await r.json();
+    return Array.isArray(rows) && rows[0] ? rows[0] : null;
+  },
+  async set(data){
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/league_state`, { method: "POST",
+      headers: sb.headers({ Prefer: "resolution=merge-duplicates" }),
+      body: JSON.stringify({ id: "tdfl", data, rev: data.rev || 0, updated_at: new Date().toISOString() }) });
+    return r.ok;
+  },
+  // Append-only audit log of contract changes.
+  async logChange(entry){
+    if (!sb.ok()) return false;
+    try {
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/salary_history`, { method: "POST",
+        headers: sb.headers(), body: JSON.stringify(entry) });
+      return r.ok;
+    } catch(e){ return false; }
+  },
+  async history(limit=100){
+    if (!sb.ok()) return [];
+    try {
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/salary_history?order=changed_at.desc&limit=${limit}`, { headers: sb.headers() });
+      return r.ok ? await r.json() : [];
+    } catch(e){ return []; }
+  }
+};
+const rookieValue = (round, slot) => round===1 ? [20,18,16,14,12,10,10,10,10,10,10,10][Math.min(slot,12)-1] : round===2 ? 5 : 1;
+
+let state = null;         // {season, leagueName, syncedAt, source, teams, rookieDraft, overrides, keepPlan, mode, emails}
+let currentTab = "cap";
+let currentTeamIdx = 0, keepTeamIdx = 0;
+let saveTimer = null;
+let commish = false;      // commissioner (edit) mode — unlocked with the PIN
+
+/* ======== storage: Supabase → Claude shared storage → localStorage → memory ======== */
+const store = {
+  async get(k){
+    if (sb.ok()) { try { const row = await sb.get(); return row ? row.data : null; } catch(e){ console.warn("Supabase get failed", e); } }
+    if (window.storage) { try { const r = await window.storage.get(k, true); return r && r.value ? JSON.parse(r.value) : null; } catch(e){ return null; } }
+    try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : null; } catch(e){ return null; }
+  },
+  async set(k, v){
+    if (sb.ok()) { try { if (await sb.set(v)) return "cloud"; } catch(e){ console.warn("Supabase set failed", e); } }
+    const s = JSON.stringify(v);
+    if (window.storage) { try { await window.storage.set(k, s, true); return "shared"; } catch(e){} }
+    try { localStorage.setItem(k, s); return "local"; } catch(e){ return "memory"; }
+  }
+};
+
+/* ======== helpers ======== */
+const $ = id => document.getElementById(id);
+const money = n => "$" + Math.round(n);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const statusEl = $("syncStatus");
+function setStatus(kind, msg){ statusEl.innerHTML = `<span class="dot ${kind==="ok"?"":kind}"></span>${msg}`; }
+
+function playerSalary(p){
+  const o = state.overrides[p.pid || p.name];
+  return o != null ? o : p.salary;
+}
+function isOverridden(p){ return state.overrides[p.pid || p.name] != null; }
+function capLimit(){ return state.mode === "season" ? 250 : 200; }
+function countsAgainstCap(p){
+  if (p.slot === "taxi") return false;
+  if (p.slot === "ir" && state.mode === "season") return false;
+  return true;
+}
+function teamCap(t){ return t.players.filter(countsAgainstCap).reduce((s,p)=>s+playerSalary(p),0); }
+
+function freshFromSnapshot(){
+  const s = JSON.parse(JSON.stringify(SNAPSHOT));
+  return { season: s.season, leagueName: "The Dynasty League", source: "spreadsheet snapshot",
+    syncedAt: null, mode: "auction", teams: s.teams, rookieDraft: s.rookieDraft || [],
+    overrides: {}, keepPlan: {} };
+}
+
+async function persist(){
+  clearTimeout(saveTimer);
+  state.rev = (state.rev || 0) + 1;
+  saveTimer = setTimeout(async () => {
+    const where = await store.set(KEY, state);
+    const when = new Date().toLocaleTimeString();
+    const msg = { cloud: `Saved to the cloud · ${when}`, shared: `Saved (shared) · ${when}`,
+      local: `Saved on this device · ${when}`, memory: `In-memory only — changes lost on reload` }[where];
+    setStatus("ok", msg);
+  }, 400);
+}
+
+const dlg = $("confirmDlg");
+const openDlg = el => { if (el.showModal) el.showModal(); else el.setAttribute("open",""); };
+const closeDlg = el => { if (el.close) el.close(); else el.removeAttribute("open"); };
+function confirmDlg(title, msg){
+  return new Promise(res => {
+    $("dlgTitle").textContent = title; $("dlgMsg").textContent = msg;
+    const done = v => { closeDlg(dlg); $("dlgYes").onclick = $("dlgNo").onclick = null; res(v); };
+    $("dlgYes").onclick = () => done(true); $("dlgNo").onclick = () => done(false);
+    openDlg(dlg);
+  });
+}
+
+/* ======== commissioner mode ======== */
+const pinDlg = $("pinDlg");
+function askPin(){
+  return new Promise(res => {
+    $("pinInput").value = ""; $("pinErr").textContent = "";
+    const ok = () => {
+      if ($("pinInput").value === COMMISH_PIN){ cleanup(); res(true); }
+      else { $("pinErr").textContent = "Wrong PIN."; $("pinInput").value = ""; $("pinInput").focus(); }
+    };
+    const cancel = () => { cleanup(); res(false); };
+    const cleanup = () => { closeDlg(pinDlg); $("pinOk").onclick = $("pinCancel").onclick = $("pinInput").onkeydown = null; };
+    $("pinOk").onclick = ok; $("pinCancel").onclick = cancel;
+    $("pinInput").onkeydown = e => { if (e.key === "Enter") ok(); };
+    openDlg(pinDlg); setTimeout(() => $("pinInput").focus(), 50);
+  });
+}
+function setCommish(on){
+  commish = on;
+  const b = $("lockBadge");
+  b.classList.toggle("unlocked", on);
+  b.classList.toggle("locked", !on);
+  b.textContent = on ? "🔓 Commissioner" : "🔒 Read-only";
+  b.title = on ? "Editing unlocked. Click to lock." : "Commissioner editing is locked. Click to unlock.";
+  document.body.classList.toggle("is-commish", on);
+}
+// Gate an edit action. Returns true if allowed (already unlocked, or PIN entered now).
+async function requireCommish(){
+  if (commish) return true;
+  const ok = await askPin();
+  if (ok) setCommish(true);
+  return ok;
+}
+
+/* ======== audit log ======== */
+function logSalaryChange(pid, name, team, from, to){
+  if (from === to) return;
+  const entry = { league_id: LEAGUE_ID, player_id: String(pid), player_name: name,
+    team_name: team, old_salary: from == null ? null : from, new_salary: to == null ? null : to,
+    changed_at: new Date().toISOString() };
+  // Keep a local mirror so the log shows even without Supabase configured.
+  if (!state.audit) state.audit = [];
+  state.audit.unshift(entry);
+  state.audit = state.audit.slice(0, 200);
+  sb.logChange(entry); // fire-and-forget to Supabase if configured
+}
+
+/* ======== Sleeper sync engine ======== */
+const API = "https://api.sleeper.app/v1";
+async function j(url){ const r = await fetch(url); if(!r.ok) throw new Error(r.status + " " + url); return r.json(); }
+
+async function syncSleeper(){
+  const btn = $("syncBtn"); btn.disabled = true;
+  setStatus("busy", "Syncing with Sleeper…");
+  try {
+    // 1. league chain (walk back through prior seasons for acquisition history)
+    const chain = [];
+    let id = LEAGUE_ID;
+    for (let i = 0; i < 4 && id; i++) { const lg = await j(`${API}/league/${id}`); chain.push(lg); id = lg.previous_league_id; }
+    const cur = chain[0], season = +cur.season;
+
+    setStatus("busy", "Syncing… rosters & users");
+    const [users, rosters] = await Promise.all([ j(`${API}/league/${cur.league_id}/users`), j(`${API}/league/${cur.league_id}/rosters`) ]);
+    const userById = Object.fromEntries(users.map(u => [u.user_id, u]));
+
+    // 2. acquisition history + franchise history: oldest season first so re-acquisitions overwrite
+    setStatus("busy", "Syncing… drafts, transactions & history");
+    const acq = {}; // pid -> {season, base, src}
+    let rookiePicks = [];
+    const history = [];
+    for (const lg of [...chain].reverse()) {
+      const [lgUsers, lgRosters] = await Promise.all([
+        j(`${API}/league/${lg.league_id}/users`).catch(()=>[]),
+        j(`${API}/league/${lg.league_id}/rosters`).catch(()=>[]) ]);
+      const lgUserById = Object.fromEntries(lgUsers.map(u => [u.user_id, u]));
+      const drafts = await j(`${API}/league/${lg.league_id}/drafts`);
+      for (const d of drafts) {
+        const picks = await j(`${API}/draft/${d.draft_id}/picks`);
+        const dat = d.start_time || d.created || 0; // drafts precede in-season moves
+        if (d.type === "auction") {
+          for (const p of picks) if (p.player_id) acq[p.player_id] = { season: +lg.season, base: +((p.metadata && p.metadata.amount) || 1), src: "Auction", at: dat };
+        } else {
+          const perRound = d.settings && d.settings.teams || 12;
+          const rp = [];
+          for (const p of picks) if (p.player_id) {
+            // Sleeper gives draft_slot directly (the board column). Deriving it from
+            // pick_no only works for snake drafts; TDFL is linear, so use draft_slot.
+            const slot = p.draft_slot || (((p.pick_no - 1) % perRound) + 1);
+            const val = rookieValue(p.round, slot);
+            acq[p.player_id] = { season: +lg.season, base: val, src: "Rookie", at: dat };
+            rp.push({ round: p.round, slot, pick: `${p.round}.${String(slot).padStart(2,"0")}`, pid: p.player_id, rosterId: p.roster_id, value: val });
+          }
+          if (+lg.season === season && rp.length) rookiePicks = rp;
+        }
+      }
+      const weeks = await Promise.all(Array.from({length:18},(_,w)=>j(`${API}/league/${lg.league_id}/transactions/${w+1}`).catch(()=>[])));
+      const lgFaab = {};
+      for (const wk of weeks) for (const t of wk) {
+        if (t.status !== "complete" || !t.adds) continue;
+        const bid = (t.settings && t.settings.waiver_bid) || 0;
+        if (t.type === "waiver" && bid) lgFaab[t.roster_id] = (lgFaab[t.roster_id] || 0) + bid;
+        const src = t.type === "waiver" ? "FAAB" : t.type === "free_agent" ? "FA" : null;
+        if (!src) continue; // trades keep the traded contract
+        const when = t.status_updated || t.created || 0;
+        for (const pid of Object.keys(t.adds)) {
+          // Keep the most recent acquisition. Sleeper returns newest-first within a
+          // week, and weeks aren't guaranteed ordered, so compare timestamps rather
+          // than trusting iteration order.
+          const prev = acq[pid];
+          if (!prev || !prev.at || when >= prev.at)
+            acq[pid] = { season: +lg.season, base: Math.max(bid, 1), src, at: when };
+        }
+      }
+      // champion / runner-up / third from the winners bracket
+      let champId = null, runnerId = null, thirdId = null;
+      try {
+        const wb = await j(`${API}/league/${lg.league_id}/winners_bracket`);
+        for (const m of wb) { if (m.p === 1) { champId = m.w; runnerId = m.l; } if (m.p === 3) thirdId = m.w; }
+      } catch(e){}
+      history.push({ season: lg.season, complete: lg.status === "complete",
+        champion: champId, runnerUp: runnerId, third: thirdId,
+        teams: lgRosters.map(r => {
+          const u = lgUserById[r.owner_id] || {};
+          return { rosterId: r.roster_id, name: ((u.metadata && u.metadata.team_name) || u.display_name || `Roster ${r.roster_id}`).trim(),
+            owner: u.display_name || "", wins: r.settings && r.settings.wins || 0,
+            losses: r.settings && r.settings.losses || 0,
+            fpts: r.settings ? (r.settings.fpts || 0) + (r.settings.fpts_decimal || 0)/100 : 0,
+            faab: lgFaab[r.roster_id] || 0,
+            champ: r.roster_id === champId, runner: r.roster_id === runnerId, third: r.roster_id === thirdId };
+        }).sort((a,b)=>(b.wins-a.wins)||(b.fpts-a.fpts)) });
+    }
+    state.history = history.reverse(); // newest first
+
+    // 3. FAAB spent this season
+    const faabSpent = {};
+    const curWeeks = await Promise.all(Array.from({length:18},(_,w)=>j(`${API}/league/${cur.league_id}/transactions/${w+1}`).catch(()=>[])));
+    for (const wk of curWeeks) for (const t of wk)
+      if (t.type === "waiver" && t.status === "complete" && t.settings && t.settings.waiver_bid)
+        faabSpent[t.roster_id] = (faabSpent[t.roster_id] || 0) + t.settings.waiver_bid;
+
+    // 4. player names/positions (big file, fetched once per sync)
+    setStatus("busy", "Syncing… player database (few MB, one-time)");
+    const allPlayers = await j(`${API}/players/nfl`);
+
+    // 5. assemble teams
+    const prevByPid = {}; // carry salaries from current state for players Sleeper history can't price
+    for (const t of state.teams) for (const p of t.players) if (p.pid) prevByPid[p.pid] = p;
+    const teams = rosters.map(r => {
+      const u = userById[r.owner_id] || {};
+      const name = (u.metadata && u.metadata.team_name) || u.display_name || `Roster ${r.roster_id}`;
+      const taxi = new Set(r.taxi || []), reserve = new Set(r.reserve || []);
+      const players = (r.players || []).map(pid => {
+        const meta = allPlayers[pid] || {};
+        const a = acq[pid];
+        let base, src, acqSeason, unknown = false;
+        if (a) { base = a.base; src = a.src; acqSeason = a.season; }
+        else if (prevByPid[pid]) { base = prevByPid[pid].base; src = prevByPid[pid].src || "Carryover"; acqSeason = season - (prevByPid[pid].ky || 0); }
+        else { base = 1; src = "?"; acqSeason = season; unknown = true; }
+        const ky = Math.max(0, season - acqSeason);
+        // Team defenses come back as the team code (e.g. "BUF") with no player record.
+        const isDef = /^[A-Z]{2,3}$/.test(pid);
+        const name = meta.full_name || (meta.first_name ? `${meta.first_name} ${meta.last_name}` : (isDef ? pid + " DEF" : pid));
+        const pos = isDef ? "DEF" : (meta.position || "");
+        return { pid, name, pos, nfl: meta.team || (isDef ? pid : ""),
+          slot: taxi.has(pid) ? "taxi" : reserve.has(pid) ? "ir" : "active",
+          base, ky, salary: base + 5*ky, src, unknown };
+      });
+      return { name: name.trim(), owner: u.display_name || "", rosterId: r.roster_id, avatar: u.avatar || null,
+        wins: r.settings && r.settings.wins || 0, losses: r.settings && r.settings.losses || 0,
+        ties: r.settings && r.settings.ties || 0,
+        fpts: r.settings ? (r.settings.fpts || 0) + (r.settings.fpts_decimal || 0)/100 : 0,
+        faabSpent: faabSpent[r.roster_id] || 0, players };
+    });
+
+    const teamByRid = Object.fromEntries(teams.map(t => [t.rosterId, t.name]));
+    state.rookieDraft = rookiePicks.map(p => ({ ...p,
+      player: (allPlayers[p.pid] && (allPlayers[p.pid].full_name || p.pid)) || p.pid,
+      pos: allPlayers[p.pid] && allPlayers[p.pid].position || "", team: teamByRid[p.rosterId] || "" }));
+    state.teams = teams;
+    state.season = String(season);
+    state.leagueName = cur.name || state.leagueName;
+    state.source = "Sleeper";
+    state.syncedAt = new Date().toISOString();
+    await persist();
+    renderAll();
+    setStatus("ok", `Synced from Sleeper · ${new Date().toLocaleString()}`);
+  } catch(e) {
+    console.error(e);
+    $("netBanner").style.display = "block";
+    setStatus("err", "Sync failed — showing " + (state.syncedAt ? "last synced data" : "spreadsheet snapshot"));
+  }
+  btn.disabled = false;
+}
+
+/* ======== renders ======== */
+function renderHeader(){
+  $("hdrSub").textContent = `TDFL · ${esc(state.season)} SEASON · ${state.source.toUpperCase()}` ;
+  document.querySelectorAll("#modeToggle button").forEach(b => b.classList.toggle("on", b.dataset.mode === state.mode));
+}
+
+function renderCap(){
+  const lim = capLimit(), maxScale = 270;
+  $("capModeNote").textContent = state.mode === "season"
+    ? "In-season mode (2026 rule): $250 cap, FAAB salaries count, IR and taxi exempt."
+    : "Auction mode: $200 hard cap at the veteran draft. Taxi exempt; IR counts.";
+  const rows = state.teams.map((t,i)=>({t,i,used:teamCap(t)})).sort((a,b)=>b.used-a.used);
+  $("capGrid").innerHTML = rows.map(({t,i,used}) => {
+    const room = lim - used, over = room < 0;
+    const spots = Math.max(0, 25 - t.players.filter(p=>p.slot!=="taxi").length);
+    return `<div class="caprow" data-i="${i}" role="button" tabindex="0">
+      <div class="team">${esc(t.name)}<small class="num">${t.players.length} rostered · ${spots} open · taxi ${t.players.filter(p=>p.slot==="taxi").length}/5 · IR ${t.players.filter(p=>p.slot==="ir").length}/2</small></div>
+      <div class="capbar">
+        <div class="fill${over?" over":""}" style="width:${Math.min(100, used/maxScale*100)}%"></div>
+        <div class="tick" style="left:${200/maxScale*100}%"></div><div class="ticklab" style="left:${200/maxScale*100}%">$200</div>
+        <div class="tick soft" style="left:${250/maxScale*100}%"></div><div class="ticklab" style="left:${250/maxScale*100}%">$250</div>
+      </div>
+      <div class="capfigs num"><div class="used">${money(used)}</div>
+      <div class="room${over?" neg":""}">${over ? money(-room)+" over cap" : money(room)+" of room"}</div></div>
+    </div>`;
+  }).join("");
+  $("capGrid").querySelectorAll(".caprow").forEach(el => {
+    const go = () => { currentTeamIdx = +el.dataset.i; switchTab("teams"); };
+    el.onclick = go; el.onkeydown = e => { if (e.key === "Enter") go(); };
+  });
+}
+
+function contractCell(p){
+  const s = playerSalary(p);
+  const ro = commish ? "" : " readonly title='Unlock commissioner mode to edit'";
+  return `<input class="salinput num" type="number" min="0" value="${s}" data-key="${esc(p.pid || p.name)}"${ro}>` +
+    (isOverridden(p) ? ` <span class="tag ovr" title="Manually overridden — click × to restore computed value" data-clear="${esc(p.pid || p.name)}" style="cursor:pointer">manual ×</span>` : "");
+}
+function renderTeam(){
+  $("teamSelect").innerHTML = state.teams.map((t,i)=>`<option value="${i}"${i===currentTeamIdx?" selected":""}>${esc(t.name)}</option>`).join("");
+  const t = state.teams[currentTeamIdx];
+  if (!t) return;
+  const lim = capLimit(), used = teamCap(t), room = lim - used;
+  $("teamCapSummary").innerHTML = `<b class="num">${money(used)}</b> vs the ${money(lim)} cap · <b class="num" style="color:${room<0?"var(--flag)":"var(--turf)"}">${room<0?money(-room)+" OVER":money(room)+" of room"}</b> · FAAB left <b class="num">${money(FAAB_BUDGET - t.faabSpent)}</b>`;
+  const head = `<tr><th>Pos</th><th>Player</th><th class="r">Base</th><th class="r">Kept</th><th class="r">Salary</th><th>Source</th></tr>`;
+  const row = p => `<tr>
+    <td><span class="pos">${esc(p.pos||"—")}</span></td>
+    <td>${esc(p.name)}${p.nfl?` <span class="tag">${esc(p.nfl)}</span>`:""}${p.unknown?` <span class="tag ovr" title="No acquisition found in Sleeper history — defaulted to $1, edit if wrong">?</span>`:""}</td>
+    <td class="r num">${money(p.base)}</td><td class="r num">${p.ky}y</td>
+    <td class="r">${contractCell(p)}</td><td>${esc(p.src||"")}</td></tr>`;
+  const fill = (id, slot, empty) => {
+    const ps = t.players.filter(p=>p.slot===slot).sort((a,b)=>playerSalary(b)-playerSalary(a));
+    $(id).innerHTML = head + (ps.length ? ps.map(row).join("") : `<tr><td colspan="6" style="color:var(--ink-soft)">${empty}</td></tr>`);
+  };
+  fill("tblActive","active","No active players — hit Sync with Sleeper.");
+  fill("tblTaxi","taxi","Taxi squad is empty.");
+  fill("tblIR","ir","No one on IR.");
+}
+function bindTeams(){
+  $("teamSelect").onchange = e => { currentTeamIdx = +e.target.value; renderTeam(); };
+  $("tab-teams").addEventListener("change", async e => {
+    const inp = e.target.closest("input[data-key]"); if (!inp) return;
+    if (!commish){ renderTeam(); return; } // read-only guard
+    const key = inp.dataset.key;
+    const p = state.teams[currentTeamIdx].players.find(x => (x.pid || x.name) === key) || {};
+    const from = state.overrides[key] != null ? state.overrides[key] : p.salary;
+    const to = Math.max(0, +inp.value || 0);
+    state.overrides[key] = to;
+    logSalaryChange(key, p.name || key, state.teams[currentTeamIdx].name, from, to);
+    persist(); renderTeam(); renderCap();
+  });
+  $("tab-teams").addEventListener("click", async e => {
+    const x = e.target.closest("[data-clear]"); if (!x) return;
+    if (!(await requireCommish())){ return; }
+    const key = x.dataset.clear;
+    const p = state.teams[currentTeamIdx].players.find(y => (y.pid || y.name) === key) || {};
+    const from = state.overrides[key];
+    delete state.overrides[key];
+    logSalaryChange(key, p.name || key, state.teams[currentTeamIdx].name, from, p.salary);
+    persist(); renderTeam(); renderCap();
+  });
+}
+
+function renderKeep(){
+  $("keepTeamSelect").innerHTML = state.teams.map((t,i)=>`<option value="${i}"${i===keepTeamIdx?" selected":""}>${esc(t.name)}</option>`).join("");
+  const t = state.teams[keepTeamIdx];
+  if (!t) return;
+  const kept = t.players.filter(p => state.keepPlan[p.pid || p.name]);
+  const keptCap = kept.filter(p=>p.slot!=="taxi").reduce((s,p)=>s+playerSalary(p)+5,0);
+  const keptTaxi = kept.filter(p=>p.slot==="taxi").reduce((s,p)=>s+playerSalary(p)+5,0);
+  $("keepSummary").innerHTML =
+    `<span>Keeping <b class="num">${kept.length}</b> players</span>
+     <span>Kept salary next year <b class="num">${money(keptCap)}</b></span>
+     <span>Auction room <b class="num" style="color:${200-keptCap<0?"var(--flag)":"var(--turf)"}">${money(200-keptCap)}</b></span>
+     <span>Taxi (exempt) <b class="num">${money(keptTaxi)}</b></span>`;
+  const rows = [...t.players].sort((a,b)=>playerSalary(b)-playerSalary(a)).map(p => {
+    const k = p.pid || p.name, on = !!state.keepPlan[k];
+    return `<tr><td><input type="checkbox" data-keep="${esc(k)}"${on?" checked":""} aria-label="Keep ${esc(p.name)}"></td>
+      <td><span class="pos">${esc(p.pos||"—")}</span></td>
+      <td>${esc(p.name)}${p.slot!=="active"?` <span class="tag ${p.slot}">${p.slot.toUpperCase()}</span>`:""}</td>
+      <td class="r num">${money(playerSalary(p))}</td>
+      <td class="r num" style="font-weight:600">${on?money(playerSalary(p)+5):"—"}</td></tr>`;
+  }).join("");
+  $("tblKeep").innerHTML = `<tr><th>Keep</th><th>Pos</th><th>Player</th><th class="r">Now</th><th class="r">Next yr</th></tr>` + rows;
+}
+function bindKeep(){
+  $("keepTeamSelect").onchange = e => { keepTeamIdx = +e.target.value; renderKeep(); };
+  $("tblKeep").addEventListener("change", e => {
+    const cb = e.target.closest("input[data-keep]"); if (!cb) return;
+    if (cb.checked) state.keepPlan[cb.dataset.keep] = true; else delete state.keepPlan[cb.dataset.keep];
+    persist(); renderKeep();
+  });
+  $("keepAll").onclick = () => { state.teams[keepTeamIdx].players.forEach(p => state.keepPlan[p.pid || p.name] = true); persist(); renderKeep(); };
+  $("keepNone").onclick = () => { state.teams[keepTeamIdx].players.forEach(p => delete state.keepPlan[p.pid || p.name]); persist(); renderKeep(); };
+}
+
+function renderFaab(){
+  $("faabGrid").innerHTML = [...state.teams].sort((a,b)=>a.faabSpent-b.faabSpent).map(t => {
+    const left = FAAB_BUDGET - t.faabSpent;
+    return `<div class="faabcard"><div class="team">${esc(t.name)}</div>
+      <div class="left num${left<=10?" low":""}">${money(left)}</div>
+      <div class="faabbar"><div style="width:${Math.max(0,left)/FAAB_BUDGET*100}%"></div></div>
+      <div class="sub num" style="margin:0">spent ${money(t.faabSpent)} of ${money(FAAB_BUDGET)}</div></div>`;
+  }).join("");
+}
+
+/* ---- live rookie draft room ---- */
+function ldPicks(ld){ // flatten 3 rounds x 12, linear
+  const out = [];
+  for (let r = 1; r <= 3; r++) for (let s = 1; s <= 12; s++)
+    out.push({ round: r, slot: s, n: (r-1)*12 + s, teamIdx: ld.order[s-1], value: rookieValue(r, s) });
+  // apply pick trades (overrides of owning team per overall pick number)
+  for (const p of out) if (ld.trades && ld.trades[p.n] != null) p.teamIdx = ld.trades[p.n];
+  return out;
+}
+function renderDraftRoom(){
+  const body = $("draftRoomBody");
+  const ld = state.liveDraft;
+  if (!ld || ld.status === "setup") {
+    const order = (ld && ld.order) || state.teams.map((_,i)=>i);
+    body.innerHTML = `<h3 style="margin-top:0">1 · Set the draft order</h3>
+      <p class="sub">Picks 1–6: reverse order of MAX PF among non-playoff teams. Picks 7–12: reverse playoff finish (champion picks 12th). "Reverse standings" is a starting point — the Commissioner sets the final order.</p>
+      <button class="btn small quiet" id="ldRev">Fill from reverse standings</button>
+      <div style="margin:10px 0">` +
+      order.map((ti,i)=>`<div class="orderrow"><span class="pk num">${i+1}.</span>
+        <select data-slot="${i}">${state.teams.map((t,x)=>`<option value="${x}"${x===ti?" selected":""}>${esc(t.name)}</option>`).join("")}</select></div>`).join("") +
+      `</div><button class="btn" id="ldStart">Start draft</button>`;
+    $("ldRev").onclick = () => {
+      const idx = state.teams.map((t,i)=>({i, fpts: t.fpts||0})).sort((a,b)=>a.fpts-b.fpts).map(x=>x.i);
+      state.liveDraft = { status:"setup", order: idx, picks:{}, trades:{} };
+      persist(); renderDraftRoom();
+    };
+    body.querySelectorAll("select[data-slot]").forEach(sel => sel.onchange = () => {
+      if (!state.liveDraft) state.liveDraft = { status:"setup", order: state.teams.map((_,i)=>i), picks:{}, trades:{} };
+      state.liveDraft.order[+sel.dataset.slot] = +sel.value;
+      persist();
+    });
+    $("ldStart").onclick = () => {
+      if (!state.liveDraft) state.liveDraft = { status:"setup", order: state.teams.map((_,i)=>i), picks:{}, trades:{} };
+      const o = state.liveDraft.order;
+      if (new Set(o).size !== 12) return alert("Each team must appear exactly once in the order.");
+      state.liveDraft.status = "live"; state.liveDraft.picks = {}; state.liveDraft.trades = state.liveDraft.trades || {};
+      persist(); renderDraftRoom();
+    };
+    return;
+  }
+
+  const picks = ldPicks(ld);
+  const made = n => ld.picks[n];
+  const next = picks.find(p => !made(p.n));
+  const done = !next;
+  if (done && ld.status === "live") { ld.status = "done"; persist(); }
+
+  let html = "";
+  if (!done) {
+    const t = state.teams[next.teamIdx];
+    const taxiFull = t.players.filter(p=>p.slot==="taxi").length >= 5;
+    html += `<div class="clock">
+      <div class="pickno num">${next.round}.${String(next.slot).padStart(2,"0")}</div>
+      <div class="otc"><small>On the clock</small>${esc(t.name)}</div>
+      <div class="slotval num">${money(next.value)}</div>
+    </div>
+    <div class="formrow">
+      <div class="field"><label>Player</label><input id="ldName" placeholder="Rookie name" autocomplete="off"></div>
+      <div class="field"><label>Pos</label><select id="ldPos"><option>RB</option><option>WR</option><option>QB</option><option>TE</option><option>PK</option><option>DEF</option></select></div>
+      <button class="btn" id="ldPick">Make pick — ${money(next.value)} to ${taxiFull ? "active roster" : "taxi"}</button>
+      ${Object.keys(ld.picks).length ? `<button class="btn ghost" id="ldUndo">Undo last pick</button>` : ""}
+    </div>`;
+    const gone = draftedNames();
+    const avail = (state.bigBoard || []).filter(p => !gone.has(p.name.toLowerCase())).slice(0, 6);
+    if (avail.length) html += `<div class="chiprow" style="margin-top:8px">` +
+      avail.map(p => `<span class="chip pickchip" data-qp="${esc(p.name)}" data-qpos="${esc(p.pos)}" role="button" tabindex="0">${esc(p.name)} · ${esc(p.pos)}</span>`).join("") + `</div>`;
+  } else {
+    html += `<div class="clock"><div class="otc"><small>Draft complete</small>All 36 picks in the books</div>
+      <button class="btn ghost small" id="ldReset" style="margin-left:auto">New draft</button></div>`;
+  }
+
+  html += `<h3>Board</h3><div class="tablewrap"><table><tr><th>Pick</th><th class="r">Value</th><th>Team</th><th>Selection</th></tr>` +
+    picks.map(p => {
+      const m = made(p.n);
+      const otc = next && p.n === next.n;
+      const teamCell = m ? esc(state.teams[p.teamIdx].name) :
+        `<select data-trade="${p.n}" title="Reassign this pick (pick trade)">${state.teams.map((t,x)=>`<option value="${x}"${x===p.teamIdx?" selected":""}>${esc(t.name)}</option>`).join("")}</select>`;
+      return `<tr class="boardrow${otc?" onclock-row":""}">
+        <td class="num" style="font-family:var(--disp);font-weight:700">${p.round}.${String(p.slot).padStart(2,"0")}</td>
+        <td class="r num" style="color:var(--turf);font-weight:600">${money(p.value)}</td>
+        <td>${teamCell}</td>
+        <td class="picked">${m ? `${esc(m.name)} <span class="pos">${esc(m.pos)}</span>` : otc ? "<b>on the clock</b>" : ""}</td></tr>`;
+    }).join("") + `</table></div>`;
+  body.innerHTML = html;
+
+  body.querySelectorAll("select[data-trade]").forEach(sel => sel.onchange = () => {
+    ld.trades[+sel.dataset.trade] = +sel.value; persist(); renderDraftRoom();
+  });
+  body.querySelectorAll(".chip[data-qp]").forEach(ch => {
+    const use = () => { $("ldName").value = ch.dataset.qp; $("ldPos").value = ch.dataset.qpos; $("ldName").focus(); };
+    ch.onclick = use; ch.onkeydown = e => { if (e.key === "Enter") use(); };
+  });
+  if (!done) {
+    const doPick = () => {
+      const name = $("ldName").value.trim();
+      if (!name) return alert("Enter the player's name.");
+      const t = state.teams[next.teamIdx];
+      const slot = t.players.filter(p=>p.slot==="taxi").length < 5 ? "taxi" : "active";
+      const pos = $("ldPos").value;
+      t.players.push({ pid: "ld-"+next.n, name, pos, nfl:"", slot, base: next.value, ky: 0, salary: next.value, src: "Rookie" });
+      ld.picks[next.n] = { name, pos, teamIdx: next.teamIdx };
+      persist(); renderDraftRoom(); renderCap();
+    };
+    $("ldPick").onclick = doPick;
+    $("ldName").onkeydown = e => { if (e.key === "Enter") doPick(); };
+    $("ldName").focus();
+    const undo = $("ldUndo");
+    if (undo) undo.onclick = () => {
+      const nums = Object.keys(ld.picks).map(Number).sort((a,b)=>b-a);
+      const last = nums[0]; const m = ld.picks[last];
+      const t = state.teams[m.teamIdx];
+      const i = t.players.findIndex(p => p.pid === "ld-"+last);
+      if (i >= 0) t.players.splice(i,1);
+      delete ld.picks[last];
+      ld.status = "live";
+      persist(); renderDraftRoom(); renderCap();
+    };
+  } else {
+    const r = $("ldReset");
+    if (r) r.onclick = async () => {
+      if (!(await confirmDlg("New draft","Clear the board and start a fresh draft? Players already added to rosters stay there."))) return;
+      state.liveDraft = { status:"setup", order: ld.order, picks:{}, trades:{} };
+      persist(); renderDraftRoom();
+    };
+  }
+}
+
+/* ---- league dates & countdowns ---- */
+const DATE_LABELS = { feeDue:"Fees due", rookieDraft:"Rookie draft", auction:"Veteran auction", trim:"Trim to 25", taxiLock:"Taxi lock", tradeDeadline:"Trade deadline" };
+function renderDates(){
+  const d = state.dates || {};
+  document.querySelectorAll("#dateForm input[data-date]").forEach(inp => { inp.value = d[inp.dataset.date] || ""; });
+  const chips = [];
+  const all = { ...d };
+  if (d.auction) { const t = new Date(d.auction + "T12:00"); t.setDate(t.getDate()-14); all.trim = t.toISOString().slice(0,10); }
+  const today = new Date(); today.setHours(0,0,0,0);
+  for (const [k, label] of Object.entries(DATE_LABELS)) {
+    if (!all[k]) continue;
+    const when = new Date(all[k] + "T00:00");
+    const days = Math.round((when - today) / 86400000);
+    const cls = days < 0 ? "past" : days <= 14 ? "soon" : "";
+    const txt = days < 0 ? "done" : days === 0 ? "today" : days === 1 ? "tomorrow" : `in ${days}d`;
+    chips.push(`<span class="chip ${cls}">${label} <b>${txt}</b></span>`);
+  }
+  $("dateChips").innerHTML = chips.join("") || `<span class="sub" style="margin:0">No dates set yet — the Commissioner can add them below.</span>`;
+}
+function bindDates(){
+  $("dateForm").addEventListener("change", e => {
+    const inp = e.target.closest("input[data-date]"); if (!inp) return;
+    if (!state.dates) state.dates = {};
+    if (inp.value) state.dates[inp.dataset.date] = inp.value; else delete state.dates[inp.dataset.date];
+    persist(); renderDates();
+  });
+}
+
+/* ---- trade analyzer (ephemeral — nothing saved) ---- */
+const trade = { a: 0, b: 1, pa: new Set(), pb: new Set() };
+function tradeTable(el, teamIdx, sel){
+  const t = state.teams[teamIdx];
+  el.innerHTML = `<tr><th></th><th>Pos</th><th>Player</th><th class="r">Salary</th></tr>` +
+    [...t.players].sort((x,y)=>playerSalary(y)-playerSalary(x)).map(p => {
+      const k = p.pid || p.name;
+      return `<tr><td><input type="checkbox" data-side="${el.id==="tblTrA"?"a":"b"}" data-k="${esc(k)}"${sel.has(k)?" checked":""} aria-label="Trade ${esc(p.name)}"></td>
+      <td><span class="pos">${esc(p.pos||"—")}</span></td>
+      <td>${esc(p.name)}${p.slot!=="active"?` <span class="tag ${p.slot}">${p.slot.toUpperCase()}</span>`:""}</td>
+      <td class="r num">${money(playerSalary(p))}</td></tr>`;
+    }).join("");
+}
+function renderTrades(){
+  $("trA").innerHTML = state.teams.map((t,i)=>`<option value="${i}"${i===trade.a?" selected":""}>${esc(t.name)}</option>`).join("");
+  $("trB").innerHTML = state.teams.map((t,i)=>`<option value="${i}"${i===trade.b?" selected":""}>${esc(t.name)}</option>`).join("");
+  tradeTable($("tblTrA"), trade.a, trade.pa);
+  tradeTable($("tblTrB"), trade.b, trade.pb);
+  const tA = state.teams[trade.a], tB = state.teams[trade.b];
+  const sum = (t, set) => t.players.filter(p => set.has(p.pid || p.name)).reduce((s,p)=>s+playerSalary(p),0);
+  const capSel = (t, set) => t.players.filter(p => set.has(p.pid || p.name) && countsAgainstCap(p)).reduce((s,p)=>s+playerSalary(p),0);
+  const outA = sum(tA, trade.pa), outB = sum(tB, trade.pb);
+  const lim = capLimit();
+  const newA = teamCap(tA) - capSel(tA, trade.pa) + capSel(tB, trade.pb);
+  const newB = teamCap(tB) - capSel(tB, trade.pb) + capSel(tA, trade.pa);
+  const fmt = (n) => `<b class="num" style="color:${lim-n<0?"var(--flag)":"var(--turf)"}">${money(n)} <span style="font-weight:400;font-size:12px">(${lim-n<0?money(n-lim)+" over":money(lim-n)+" room"})</span></b>`;
+  $("tradeSummary").innerHTML = trade.a === trade.b
+    ? `<span>Pick two different teams.</span>`
+    : `<span>${esc(tA.name)} sends <b class="num">${money(outA)}</b> · gets <b class="num">${money(outB)}</b> · cap after ${fmt(newA)}</span>
+       <span>${esc(tB.name)} sends <b class="num">${money(outB)}</b> · gets <b class="num">${money(outA)}</b> · cap after ${fmt(newB)}</span>`;
+}
+function bindTrades(){
+  $("trA").onchange = e => { trade.a = +e.target.value; trade.pa.clear(); renderTrades(); };
+  $("trB").onchange = e => { trade.b = +e.target.value; trade.pb.clear(); renderTrades(); };
+  $("tab-trades").addEventListener("change", e => {
+    const cb = e.target.closest("input[data-side]"); if (!cb) return;
+    const set = cb.dataset.side === "a" ? trade.pa : trade.pb;
+    if (cb.checked) set.add(cb.dataset.k); else set.delete(cb.dataset.k);
+    renderTrades();
+  });
+  $("trClear").onclick = () => { trade.pa.clear(); trade.pb.clear(); $("trNote").value = ""; renderTrades(); };
+}
+
+/* ---- rookie big board ---- */
+function draftedNames(){
+  const s = new Set();
+  if (state.liveDraft && state.liveDraft.picks) for (const m of Object.values(state.liveDraft.picks)) s.add(m.name.toLowerCase());
+  if (state.rookieDraft) for (const p of state.rookieDraft) s.add(String(p.player).toLowerCase());
+  return s;
+}
+function renderBigBoard(){
+  const bb = state.bigBoard || [];
+  const gone = draftedNames();
+  $("tblBB").innerHTML = bb.length
+    ? `<tr><th>#</th><th>Pos</th><th>Prospect</th><th>Note</th><th class="r"></th></tr>` +
+      bb.map((p,i) => `<tr class="${gone.has(p.name.toLowerCase()) ? "bb-drafted" : ""}">
+        <td class="num" style="font-family:var(--disp);font-weight:700">${i+1}</td>
+        <td><span class="pos">${esc(p.pos)}</span></td><td>${esc(p.name)}</td><td class="sub" style="margin:0">${esc(p.note||"")}</td>
+        <td class="r">
+          <button class="btn small quiet" data-bb="up" data-i="${i}" ${i===0?"disabled":""} aria-label="Move up">↑</button>
+          <button class="btn small quiet" data-bb="dn" data-i="${i}" ${i===bb.length-1?"disabled":""} aria-label="Move down">↓</button>
+          <button class="btn small quiet" data-bb="rm" data-i="${i}" aria-label="Remove">×</button>
+        </td></tr>`).join("")
+    : `<tr><td style="color:var(--ink-soft)">Board's empty — add the rookies you're eyeing.</td></tr>`;
+}
+function bindBigBoard(){
+  const add = () => {
+    const name = $("bbName").value.trim();
+    if (!name) return;
+    if (!state.bigBoard) state.bigBoard = [];
+    if (state.bigBoard.some(p => p.name.toLowerCase() === name.toLowerCase())) return alert(`${name} is already on the board.`);
+    state.bigBoard.push({ name, pos: $("bbPos").value, note: $("bbNote").value.trim() });
+    $("bbName").value = ""; $("bbNote").value = "";
+    persist(); renderBigBoard(); $("bbName").focus();
+  };
+  $("bbAdd").onclick = add;
+  $("bbName").onkeydown = e => { if (e.key === "Enter") add(); };
+  $("tblBB").addEventListener("click", e => {
+    const b = e.target.closest("button[data-bb]"); if (!b) return;
+    const i = +b.dataset.i, bb = state.bigBoard;
+    if (b.dataset.bb === "rm") bb.splice(i,1);
+    if (b.dataset.bb === "up" && i > 0) [bb[i-1], bb[i]] = [bb[i], bb[i-1]];
+    if (b.dataset.bb === "dn" && i < bb.length-1) [bb[i+1], bb[i]] = [bb[i], bb[i+1]];
+    persist(); renderBigBoard();
+  });
+}
+
+/* ---- franchise history ---- */
+function renderHistory(){
+  const h = state.history || [];
+  if (!h.length) { $("histBanners").innerHTML = ""; $("tblAllTime").innerHTML = `<tr><td style="color:var(--ink-soft)">History fills in after a Sleeper sync.</td></tr>`; $("histSeasons").innerHTML = ""; return; }
+  $("histBanners").innerHTML = h.filter(s => s.complete && s.champion != null).map(s => {
+    const champ = s.teams.find(t => t.champ);
+    return `<span class="chip champ">🏆 ${esc(s.season)} — ${esc(champ ? champ.name : "?")}</span>`;
+  }).join("") || `<span class="sub" style="margin:0">No completed championships yet.</span>`;
+  // all-time by owner
+  const agg = {};
+  for (const s of h) for (const t of s.teams) {
+    const k = t.owner || t.name;
+    const a = agg[k] = agg[k] || { owner: k, seasons: 0, wins: 0, losses: 0, fpts: 0, faab: 0, titles: 0, seconds: 0 };
+    a.seasons++; a.wins += t.wins; a.losses += t.losses; a.fpts += t.fpts; a.faab += t.faab;
+    if (t.champ && s.complete) a.titles++; if (t.runner && s.complete) a.seconds++;
+  }
+  const rows = Object.values(agg).sort((a,b)=>(b.titles-a.titles)||(b.wins-a.wins)||(b.fpts-a.fpts));
+  $("tblAllTime").innerHTML = `<tr><th>Owner</th><th class="r">🏆</th><th class="r">W</th><th class="r">L</th><th class="r">Win %</th><th class="r">PF</th><th class="r">FAAB spent</th></tr>` +
+    rows.map(a => `<tr><td>${esc(a.owner)}</td><td class="r num">${a.titles||""}</td>
+      <td class="r num">${a.wins}</td><td class="r num">${a.losses}</td>
+      <td class="r num">${a.wins+a.losses ? Math.round(100*a.wins/(a.wins+a.losses)) + "%" : "—"}</td>
+      <td class="r num">${a.fpts.toFixed(0)}</td><td class="r num">${money(a.faab)}</td></tr>`).join("");
+  $("histSeasons").innerHTML = h.map(s => `<h3>${esc(s.season)} season${s.complete ? "" : " · in progress"}</h3>
+    <div class="tablewrap"><table><tr><th>#</th><th>Team</th><th class="r">W</th><th class="r">L</th><th class="r">PF</th><th></th></tr>` +
+    s.teams.map((t,i)=>`<tr><td class="num" style="font-family:var(--disp);font-weight:700">${i+1}</td>
+      <td>${esc(t.name)}<span class="sub" style="margin:0;display:block">${esc(t.owner)}</span></td>
+      <td class="r num">${t.wins}</td><td class="r num">${t.losses}</td><td class="r num">${t.fpts.toFixed(1)}</td>
+      <td>${t.champ?'<span class="chip champ" style="padding:1px 8px">🏆</span>':t.runner?'<span class="tag ovr">2nd</span>':t.third?'<span class="tag">3rd</span>':""}</td></tr>`).join("") +
+    `</table></div>`).join("");
+}
+
+function renderDraft(){
+  renderDraftRoom();
+  if (!state.rookieDraft || !state.rookieDraft.length) {
+    $("tblDraft").innerHTML = `<tr><td style="color:var(--ink-soft)">No Sleeper rookie draft synced yet for ${esc(state.season)}.</td></tr>`;
+    return;
+  }
+  $("tblDraft").innerHTML = `<tr><th>Pick</th><th class="r">Value</th><th>Player</th><th>Pos</th><th>Team</th></tr>` +
+    state.rookieDraft.map(p => `<tr><td class="num" style="font-family:var(--disp);font-weight:700">${esc(p.pick)}</td>
+      <td class="r num" style="color:var(--turf);font-weight:600">${money(p.value)}</td>
+      <td>${esc(p.player)}</td><td><span class="pos">${esc(p.pos||"—")}</span></td><td>${esc(p.team||"")}</td></tr>`).join("");
+}
+
+function renderStand(){
+  $("standSeason").textContent = state.season;
+  const hasRecord = state.teams.some(t => (t.wins||0)+(t.losses||0) > 0);
+  if (!hasRecord) { $("tblStand").innerHTML = `<tr><td style="color:var(--ink-soft)">Standings appear after a Sleeper sync once the season starts.</td></tr>`; return; }
+  const rows = [...state.teams].sort((a,b)=> (b.wins-a.wins) || (b.fpts-a.fpts));
+  $("tblStand").innerHTML = `<tr><th>#</th><th>Team</th><th class="r">W</th><th class="r">L</th><th class="r">PF</th><th></th></tr>` +
+    rows.map((t,i)=>`<tr><td class="num" style="font-family:var(--disp);font-weight:700">${i+1}</td>
+      <td>${esc(t.name)}<span class="sub" style="margin:0;display:block">${esc(t.owner||"")}</span></td>
+      <td class="r num">${t.wins||0}</td><td class="r num">${t.losses||0}</td>
+      <td class="r num">${(t.fpts||0).toFixed(1)}</td>
+      <td>${i<2?'<span class="tag" style="background:#F4ECD9;color:#8A6C1F">BYE</span>':i<6?'<span class="tag taxi">PLAYOFF</span>':""}</td></tr>`).join("");
+}
+
+/* ======== chrome ======== */
+/* ======== league office: emails + audit log ======== */
+function renderOffice(){
+  $("officeLockNote").innerHTML = commish
+    ? "Commissioner mode is <b>unlocked</b> — you can edit emails and send reports."
+    : "You're in read-only mode. Editing emails or sending a report will ask for the PIN.";
+  if (!state.emails) state.emails = {};
+
+  // Emails table
+  const emailRows = state.teams.map(t => {
+    const e = state.emails[t.rosterId] || "";
+    return `<tr>
+      <td>${esc(t.name)}<span class="sub" style="margin:0;display:block">${esc(t.owner||"")}</span></td>
+      <td><input class="salinput" style="width:210px;text-align:left" type="email" placeholder="email@example.com"
+        value="${esc(e)}" data-email="${t.rosterId}"${commish?"":" readonly"}></td>
+    </tr>`;
+  }).join("");
+  const regd = state.teams.filter(t => (state.emails[t.rosterId]||"").trim()).length;
+  $("tblEmails").innerHTML = `<tr><th>Team</th><th>Email — ${regd}/${state.teams.length} registered</th></tr>` + emailRows;
+  $("emailSendNote").textContent = "";
+
+  // Audit log — prefer Supabase, fall back to local mirror
+  const paint = rows => {
+    if (!rows || !rows.length){ $("tblAudit").innerHTML = `<tr><td style="color:var(--ink-soft)">No contract changes logged yet.</td></tr>`; return; }
+    $("tblAudit").innerHTML = `<tr><th>When</th><th>Player</th><th>Team</th><th class="r">Change</th></tr>` +
+      rows.slice(0,100).map(h => {
+        const when = new Date(h.changed_at).toLocaleString([], {month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"});
+        const from = h.old_salary == null ? "—" : money(h.old_salary);
+        const to = h.new_salary == null ? "computed" : money(h.new_salary);
+        return `<tr><td class="sub" style="margin:0;white-space:nowrap">${esc(when)}</td>
+          <td>${esc(h.player_name||h.player_id)}</td><td class="sub" style="margin:0">${esc(h.team_name||"")}</td>
+          <td class="r num">${from} → <b>${to}</b></td></tr>`;
+      }).join("");
+  };
+  paint(state.audit || []);
+  if (sb.ok()) sb.history(100).then(rows => { if (rows && rows.length) paint(rows); });
+}
+function bindOffice(){
+  $("tab-office").addEventListener("change", async e => {
+    const inp = e.target.closest("input[data-email]"); if (!inp) return;
+    if (!(await requireCommish())){ renderOffice(); return; }
+    if (!state.emails) state.emails = {};
+    const v = inp.value.trim();
+    if (v) state.emails[inp.dataset.email] = v; else delete state.emails[inp.dataset.email];
+    persist(); renderOffice();
+  });
+  $("emailSendNow").onclick = async () => {
+    if (!(await requireCommish())) return;
+    const recipients = state.teams.map(t => state.emails[t.rosterId]).filter(x => x && x.trim());
+    if (!recipients.length){ $("emailSendNote").textContent = "No emails registered yet."; return; }
+    const note = $("emailSendNote");
+    note.textContent = "Sending…";
+    try {
+      if (sb.ok()){
+        const r = await fetch(`${SUPABASE_URL}/functions/v1/send-cap-report`, {
+          method: "POST", headers: sb.headers(),
+          body: JSON.stringify({ subject: `TDFL cap report — ${new Date().toLocaleDateString()}`,
+            html: buildCapReportHTML(), recipients }) });
+        note.textContent = r.ok ? `Sent to ${recipients.length} owners.` : "Send failed — check the Edge Function is deployed.";
+      } else {
+        // No backend: open a prefilled mail draft as a fallback.
+        const body = state.teams.map(t => `${t.name}: $${teamCap(t)} vs $${capLimit()} cap`).join("\n");
+        window.location.href = `mailto:${recipients.join(",")}?subject=${encodeURIComponent("TDFL cap report")}&body=${encodeURIComponent(body)}`;
+        note.textContent = "Opened an email draft (no backend configured).";
+      }
+    } catch(err){ note.textContent = "Send failed."; }
+  };
+}
+function buildCapReportHTML(){
+  const lim = capLimit();
+  const rows = [...state.teams].map(t => ({t, used: teamCap(t)})).sort((a,b)=>b.used-a.used)
+    .map(({t,used}) => {
+      const room = lim - used, over = room < 0;
+      return `<tr><td style="padding:6px 10px">${esc(t.name)}</td>
+        <td style="padding:6px 10px;text-align:right;font-weight:700">$${used}</td>
+        <td style="padding:6px 10px;text-align:right;color:${over?"#C23B2B":"#1E7A4C"}">${over?`$${-room} over`:`$${room} room`}</td></tr>`;
+    }).join("");
+  return `<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto">
+    <h2 style="color:#0E1B2C">The Dynasty League — cap report</h2>
+    <p style="color:#3C4C61">Mode: ${state.mode==="season"?"In-season ($250 cap)":"Auction ($200 cap)"} · ${new Date().toLocaleDateString()}</p>
+    <table style="border-collapse:collapse;width:100%;font-size:14px">
+      <tr style="border-bottom:2px solid #0E1B2C"><th style="text-align:left;padding:6px 10px">Team</th><th style="text-align:right;padding:6px 10px">Used</th><th style="text-align:right;padding:6px 10px">Room</th></tr>
+      ${rows}
+    </table>
+    <p style="color:#6b7280;font-size:12px;margin-top:14px">Taxi excluded from the cap; IR excluded in in-season mode. Sent from the TDFL hub.</p>
+  </div>`;
+}
+
+function switchTab(tab){
+  currentTab = tab;
+  document.querySelectorAll("#nav button").forEach(b => b.classList.toggle("on", b.dataset.tab === tab));
+  ["cap","teams","keep","faab","trades","draft","stand","office","rules"].forEach(t => $("tab-"+t).hidden = t !== tab);
+  ({cap:()=>{renderCap();renderDates();}, teams:renderTeam, keep:renderKeep, faab:renderFaab,
+    trades:renderTrades, draft:()=>{renderBigBoard();renderDraft();},
+    stand:()=>{renderStand();renderHistory();}, office:renderOffice}[tab] || (()=>{}))();
+}
+function renderAll(){ renderHeader(); renderCap(); renderDates(); renderTeam(); renderKeep(); renderFaab(); renderTrades(); renderBigBoard(); renderDraft(); renderStand(); renderHistory(); renderOffice(); switchTab(currentTab); }
+
+$("lockBadge").onclick = async () => {
+  if (commish){ setCommish(false); renderAll(); return; }
+  if (await requireCommish()) renderAll();
+};
+
+$("nav").addEventListener("click", e => { const b = e.target.closest("button"); if (b) switchTab(b.dataset.tab); });
+$("modeToggle").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; state.mode = b.dataset.mode; persist(); renderAll(); });
+$("syncBtn").onclick = syncSleeper;
+$("resetBtn").onclick = async () => {
+  if (!(await confirmDlg("Reset to snapshot","Discard all synced data, salary overrides, and keeper plans, and reload the built-in spreadsheet snapshot?"))) return;
+  state = freshFromSnapshot(); await persist(); renderAll();
+};
+
+$("exportBtn").onclick = () => {
+  const blob = new Blob([JSON.stringify(state, null, 1)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `tdfl-league-${state.season}-${new Date().toISOString().slice(0,10)}.json`;
+  a.click(); URL.revokeObjectURL(a.href);
+};
+$("importBtn").onclick = () => $("importFile").click();
+$("importFile").onchange = async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try {
+    const data = JSON.parse(await f.text());
+    if (!data.teams || !Array.isArray(data.teams)) throw new Error("not a league file");
+    if (!(await confirmDlg("Import league data", `Replace everything on this device with the data from ${f.name}?`))) return;
+    state = data; await persist(); renderAll();
+  } catch(err) { alert("That file doesn't look like a TDFL export."); }
+  e.target.value = "";
+};
+
+(async function init(){
+  const saved = await store.get(KEY);
+  state = saved || freshFromSnapshot();
+  if (!state.overrides) state.overrides = {};
+  if (!state.keepPlan) state.keepPlan = {};
+  if (!state.mode) state.mode = "auction";
+  if (!state.bigBoard) state.bigBoard = [];
+  if (!state.dates) state.dates = {};
+  if (!state.history) state.history = [];
+  if (!state.emails) state.emails = {};
+  if (!state.audit) state.audit = [];
+  $("standSeason").textContent = state.season;
+  setCommish(false);
+  bindTeams(); bindKeep(); bindDates(); bindTrades(); bindBigBoard(); bindOffice();
+  renderAll();
+  setStatus("ok", state.syncedAt ? `Last Sleeper sync ${new Date(state.syncedAt).toLocaleString()}` : `Showing ${state.source} · hit Sync with Sleeper for live numbers`);
+
+  // Draft-day live follow: while the board is open during a live draft, poll shared
+  // storage so every owner's screen updates as picks come in. Skips the update if
+  // you're mid-typing a pick. Works with Supabase or Claude shared storage.
+  if (sb.ok() || window.storage) setInterval(async () => {
+    if (currentTab !== "draft" || !state.liveDraft || state.liveDraft.status !== "live") return;
+    const nameInput = document.getElementById("ldName");
+    if (nameInput && (nameInput.value.trim() || document.activeElement === nameInput)) return;
+    const remote = await store.get(KEY);
+    if (remote && (remote.rev || 0) > (state.rev || 0)) { state = remote; renderAll(); }
+  }, 4000);
+})();
+</script>
+</body>
+</html>
