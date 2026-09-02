@@ -94,8 +94,6 @@ td.r,th.r{text-align:right}
 .rules h3{margin-top:18px}
 .rules ul{margin:6px 0 0 18px}
 .rules li{margin-bottom:4px}
-.prize{display:grid;grid-template-columns:1fr auto;max-width:360px;gap:4px 20px;font-size:14px}
-.prize b{font-family:var(--disp);font-size:16px}
 .chiprow{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
 .recgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
 .reccard{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px}
@@ -108,22 +106,9 @@ td.r,th.r{text-align:right}
 .chip.soon{background:#F4ECD9;border-color:var(--gold)}
 .chip.past{opacity:.5;text-decoration:line-through}
 .chip.champ{background:#F4ECD9;border-color:var(--gold);font-size:13px}
-.chip.pickchip{cursor:pointer;background:var(--turf-soft);border-color:var(--turf)}
-.chip.pickchip:hover{background:var(--turf);color:#fff}
 .tradegrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 @media(max-width:760px){.tradegrid{grid-template-columns:1fr}}
 .bb-drafted td{opacity:.45;text-decoration:line-through}
-.clock{background:var(--ink);color:#fff;border-radius:var(--radius);padding:14px 16px;display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin:10px 0}
-.clock .pickno{font-family:var(--disp);font-weight:800;font-size:44px;line-height:1}
-.clock .otc{font-family:var(--disp);font-weight:700;font-size:24px;text-transform:uppercase;line-height:1.05}
-.clock .otc small{display:block;font-family:var(--body);font-weight:400;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#9DB2C9}
-.clock .slotval{margin-left:auto;font-family:var(--disp);font-weight:800;font-size:34px;color:var(--gold)}
-.orderrow{display:grid;grid-template-columns:56px 1fr;gap:8px;align-items:center;padding:4px 0}
-.orderrow .pk{font-family:var(--disp);font-weight:700;font-size:17px}
-.orderrow select{border:1px solid var(--line);border-radius:6px;padding:6px 8px;width:100%;max-width:320px}
-.boardrow td select{border:1px solid var(--line);border-radius:6px;padding:3px 6px;font-size:12px}
-.picked{color:var(--ink)}
-.onclock-row{background:#FBF6E8}
 .footer-note{max-width:1100px;margin:0 auto;padding:0 12px 30px;font-size:12px;color:var(--ink-soft)}
 dialog{border:1px solid var(--line);border-radius:var(--radius);padding:18px;max-width:420px}
 dialog::backdrop{background:rgba(14,27,44,.5)}
@@ -152,9 +137,7 @@ dialog::backdrop{background:rgba(14,27,44,.5)}
     <button data-tab="trades">Trades</button>
     <button data-tab="draft">Draft</button>
     <button data-tab="stand">League</button>
-    <button data-tab="records">Records</button>
     <button data-tab="power">Power</button>
-    <button data-tab="payouts">Payouts</button>
     <button data-tab="office">Office</button>
     <button data-tab="rules">Rules</button>
   </nav>
@@ -244,44 +227,16 @@ dialog::backdrop{background:rgba(14,27,44,.5)}
 
   <section id="tab-draft" hidden>
     <div class="card">
-      <h2>Rookie big board</h2>
-      <p class="sub" id="bbSourceNote"></p>
-      <p class="sub">The league's shared pre-draft rankings. Add prospects, reorder them, argue about it in the group chat. On draft night the board feeds the room below — the top available names appear as one-tap picks, and drafted players get crossed off automatically. This list is baked into the site: it needs no internet and can't fail on draft day.</p>
+      <h2>Draft review</h2>
+      <p class="sub">Every draft the league has ever run, pulled from Sleeper. Pick a season and a draft to see who went where and for what. Drafting itself happens in Sleeper — this page is the record.</p>
       <div class="formrow">
-        <div class="field"><label>Prospect</label><input id="bbName" placeholder="Name" autocomplete="off"></div>
-        <div class="field"><label>Pos</label><select id="bbPos"><option>RB</option><option>WR</option><option>QB</option><option>TE</option></select></div>
-        <div class="field" style="flex:1;min-width:160px"><label>Note</label><input id="bbNote" placeholder="school, comp, injury flag…"></div>
-        <button class="btn" id="bbAdd">Add</button>
+        <div class="field"><label>Season</label><select id="archiveSeason" class="salinput" style="width:auto"></select></div>
+        <div class="field"><label>Draft</label><select id="archiveType" class="salinput" style="width:auto"></select></div>
+        <div class="field"><label>Team</label><select id="archiveTeam" class="salinput" style="width:auto"></select></div>
       </div>
-      <div class="tablewrap" style="margin-top:10px"><table id="tblBB"></table></div>
-      <details style="margin-top:12px">
-        <summary style="cursor:pointer;font-size:12px;color:var(--ink-soft)">Update rankings (commissioner)</summary>
-        <p class="sub" style="margin-top:8px">Paste a fresh list to replace the board — one player per line as <code>Name, POS, TEAM</code> (POS and TEAM optional). Do this before draft day to refresh; it saves to the shared data and stays baked-in, so draft day never touches the internet.</p>
-        <textarea id="bbPaste" placeholder="Jeremiyah Love, RB, ARI&#10;Carnell Tate, WR, TEN&#10;..." style="width:100%;min-height:120px;border:1px solid var(--line);border-radius:8px;padding:8px;font-family:ui-monospace,monospace;font-size:12px"></textarea>
-        <div class="formrow">
-          <button class="btn small" id="bbImport">Replace board with pasted list</button>
-          <button class="btn small quiet" id="bbRestore">Restore built-in Top 100</button>
-          <span class="sub" id="bbImportNote" style="margin:0;align-self:center"></span>
-        </div>
-      </details>
-    </div>
-    <div class="card" id="draftRoom">
-      <h2>Rookie draft room</h2>
-      <p class="sub">3 rounds, linear — the 1.01 opens every round (Art. IV §4.2.2). Contract values are slotted automatically: 1.01 $20 sliding to $10, round 2 $5, round 3 $1. Picks land on the owner's taxi squad when there's room, otherwise the active roster. Rosters expand +3 during the draft; trim to 25 two weeks before the veteran auction.</p>
-      <div id="draftRoomBody"></div>
-    </div>
-    <div class="card">
-      <h3 style="margin-top:0">Synced Sleeper draft results</h3>
-      <p class="sub" id="draftNote">If you run the draft in Sleeper instead, Sync pulls the picks and prices them here.</p>
-      <div class="tablewrap"><table id="tblDraft"></table></div>
-    </div>
-    <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
-        <h3 style="margin:0">Draft archives</h3>
-        <select id="archiveSeason" class="salinput" style="width:auto"></select>
-      </div>
-      <p class="sub">Every draft the league has ever run, pulled from Sleeper. Rookie and auction picks, who took whom, and for what.</p>
-      <div class="tablewrap"><table id="tblArchive"></table></div>
+      <div id="archiveSummary" class="keepbar" style="position:static;margin-top:12px"></div>
+      <div class="tablewrap" style="margin-top:10px"><table id="tblArchive"></table></div>
+      <p class="sub" style="margin-top:10px">Rookie contracts are slotted by pick (1.01 $20 sliding to $10, round 2 $5, round 3 $1). Auction contracts are the winning bid. Both rise +$5 for every season the player is kept.</p>
     </div>
   </section>
 
@@ -292,19 +247,8 @@ dialog::backdrop{background:rgba(14,27,44,.5)}
       <div class="tablewrap"><table id="tblStand"></table></div>
     </div>
     <div class="card">
-      <h2>Franchise history</h2>
-      <p class="sub" id="histNote">Every season in the league's Sleeper chain — champions, finishes, and all-time owner records. Fills in on Sync.</p>
-      <div id="histBanners" class="chiprow"></div>
-      <h3>All-time records</h3>
-      <div class="tablewrap"><table id="tblAllTime"></table></div>
-      <div id="histSeasons"></div>
-    </div>
-  </section>
-
-  <section id="tab-records" hidden>
-    <div class="card">
       <h2>Hall of fame</h2>
-      <p class="sub">Champions banner and the all-time leaderboard. Titles first, then wins, then total points.</p>
+      <p class="sub" id="histNote">Champions banner and the all-time owner leaderboard across every season in the league's Sleeper chain. Titles first, then wins, then total points. Fills in on Sync.</p>
       <div id="hofBanners" class="chiprow"></div>
       <div class="tablewrap" style="margin-top:10px"><table id="tblHof"></table></div>
     </div>
@@ -322,6 +266,11 @@ dialog::backdrop{background:rgba(14,27,44,.5)}
       </div>
       <div id="rivResult" style="margin-top:12px"></div>
     </div>
+    <div class="card">
+      <h2>Season by season</h2>
+      <p class="sub">Final standings for every year on record.</p>
+      <div id="histSeasons"></div>
+    </div>
   </section>
 
   <section id="tab-power" hidden>
@@ -330,23 +279,6 @@ dialog::backdrop{background:rgba(14,27,44,.5)}
       <p class="sub" id="powerNote">A blended score: recent scoring, season-long points, and record. Not the standings — this rewards teams playing well right now, not who caught soft matchups.</p>
       <div class="tablewrap"><table id="tblPower"></table></div>
       <p class="sub" style="margin-top:8px">Power score = 45% average points (last 4 weeks) + 30% season avg points + 25% win rate, scaled 0–100 against the field.</p>
-    </div>
-  </section>
-
-  <section id="tab-payouts" hidden>
-    <div class="card">
-      <h2>Payout tracker</h2>
-      <p class="sub">Buy-ins collected vs. prizes owed, per the constitution's prize schedule. Toggle the buy-in to match the season. Check "paid" as owners settle up.</p>
-      <div class="formrow">
-        <div class="field"><label>Buy-in</label>
-          <select id="payBuyin" class="salinput" style="width:auto"><option value="100">$100 (2025+)</option><option value="50">$50 (2024)</option></select>
-        </div>
-        <div id="payPot" class="sub" style="margin:0;align-self:center"></div>
-      </div>
-      <h3>Buy-ins collected</h3>
-      <div class="tablewrap"><table id="tblPayIn"></table></div>
-      <h3>Prizes owed</h3>
-      <div class="tablewrap"><table id="tblPayOut"></table></div>
     </div>
   </section>
 
@@ -372,14 +304,18 @@ dialog::backdrop{background:rgba(14,27,44,.5)}
     <div class="card rules">
       <h2>Constitution quick reference</h2>
       <p class="sub">Condensed from the TDFL Constitution (updated 9/30/2024). The full document governs; this is the cheat sheet.</p>
-      <h3>Money</h3>
-      <div class="prize">
-        <span>Buy-in (2025 on)</span><b class="num">$100</b>
-        <span>Champion (63%)</span><b class="num">$750</b>
-        <span>Runner-up (25%)</span><b class="num">$300</b>
-        <span>Third place (4%)</span><b class="num">$50</b>
-        <span>Reg-season high score (8%)</span><b class="num">$100</b>
+      <h3>Money &amp; payouts</h3>
+      <p class="sub" style="margin-top:0">Buy-in is <b>$100</b> per team, due to the Commissioner on or before draft night (Art. II §2.1). Twelve teams makes a <b>$1,200</b> pot. Prize money is paid within seven days of the championship game (§2.2).</p>
+      <div class="tablewrap">
+        <table>
+          <tr><th>Place</th><th class="r">Share</th><th class="r">2025 on ($100 buy-in)</th><th class="r">2024 ($50 buy-in)</th></tr>
+          <tr><td>🏆 Champion</td><td class="r sub">63%</td><td class="r num" style="font-weight:700;color:var(--turf)">$750</td><td class="r num">$375</td></tr>
+          <tr><td>Runner-up</td><td class="r sub">25%</td><td class="r num" style="font-weight:700;color:var(--turf)">$300</td><td class="r num">$150</td></tr>
+          <tr><td>Third place</td><td class="r sub">4%</td><td class="r num" style="font-weight:700;color:var(--turf)">$50</td><td class="r num">$25</td></tr>
+          <tr><td>Reg-season high score</td><td class="r sub">8%</td><td class="r num" style="font-weight:700;color:var(--turf)">$100</td><td class="r num">$50</td></tr>
+        </table>
       </div>
+      <p class="sub">Reg-season high score is the single highest weekly score in the regular season. Dues unpaid 14 days after the draft lottery let the League go to the waiting list.</p>
       <h3>Cap &amp; contracts</h3>
       <ul>
         <li>$200 hard cap enforced at the veteran auction draft.</li>
@@ -458,125 +394,6 @@ const COMMISH_PIN = "1225";
    triggers one sync; everyone else reads the fresh shared data. Set to 0 to
    disable auto-sync and go back to manual-only.                                */
 const AUTO_SYNC_MS = 3 * 60 * 60 * 1000; // 3 hours
-
-/* ======== ROOKIE RANKINGS (baked in — no live fetch, ironclad on draft day) ====
-   2026 dynasty rookie big board, full Top 100 (12-team Superflex, 0.5 TE-premium).
-   Embedded so the draft board works with ZERO network dependency — it cannot fail
-   on draft night regardless of wifi, Sleeper, or any ranking site. Because it's a
-   superflex board, QBs rank higher than a standard-format list; it's advisory only
-   and never constrains the pick. Update anytime before the draft from the Draft tab
-   ("Update rankings" paste box, commissioner only) or edit here. Format per line:
-   "Player, POS, TEAM".                                                            */
-const ROOKIE_RANKINGS_RAW = `
-Jeremiyah Love, RB, ARI
-Fernando Mendoza, QB, LV
-Carnell Tate, WR, TEN
-Makai Lemon, WR, PHI
-Jordyn Tyson, WR, NO
-Kenyon Sadiq, TE, NYJ
-Ty Simpson, QB, LAR
-Jadarian Price, RB, SEA
-KC Concepcion, WR, CLE
-Omar Cooper Jr., WR, NYJ
-Denzel Boston, WR, CLE
-Eli Stowers, TE, PHI
-Germie Bernard, WR, PIT
-Malachi Fields, WR, NYG
-Zachariah Branch, WR, ATL
-Antonio Williams, WR, WAS
-De'Zhaun Stribling, WR, SF
-Chris Bell, WR, MIA
-Chris Brazzell Ii, WR, CAR
-Max Klare, TE, LAR
-Carson Beck, QB, ARI
-Drew Allar, QB, PIT
-Ja'Kobi Lane, WR, BAL
-Ted Hurst, WR, TB
-Jonah Coleman, RB, DEN
-Elijah Sarratt, WR, BAL
-Cade Klubnik, QB, NYJ
-Skyler Bell, WR, BUF
-Caleb Douglas, WR, MIA
-Nicholas Singleton, RB, TEN
-Eli Raridon, TE, NE
-Oscar Delp, TE, NO
-Justin Joly, TE, DEN
-Bryce Lance, WR, NO
-Kaytron Allen, RB, WAS
-Adam Randall, RB, BAL
-Taylen Green, QB, CLE
-Mike Washington Jr., RB, LV
-Zavion Thomas, WR, CHI
-Brenen Thompson, WR, LAC
-Kaelon Black, RB, SF
-Emmett Johnson, RB, KC
-Demond Claiborne, RB, MIN
-Kevin Coleman Jr., WR, MIA
-Cj Daniels, WR, LAR
-Deion Burks, WR, IND
-Colbie Young, WR, CIN
-Malik Benson, WR, LV
-Reggie Virgil, WR, ARI
-Marlin Klein, TE, HOU
-Tanner Koziol, TE, JAX
-Eli Heidenreich, RB, PIT
-Matthew Hibner, TE, BAL
-Jack Endries, TE, CIN
-Cyrus Allen, WR, KC
-Seth McGowan, RB, IND
-Garrett Nussmeier, QB, KC
-Cole Payton, QB, PHI
-Michael Trigg, TE, DAL
-Jeff Caldwell, WR, KC
-Josh Cameron, WR, JAX
-Kendrick Law, WR, DET
-Roman Hemby, RB, LV
-Robert Henry Jr., RB, WAS
-Noah Whittington, RB, HOU
-Nate Boerkircher, TE, JAX
-Will Kacmarek, TE, MIA
-Seydou Traore, TE, MIA
-Le'Veon Moss, RB, MIA
-J'Mari Taylor, RB, JAX
-Terion Stewart, RB, KC
-Diego Pavia, QB, BAL
-Kaden Wetjen, WR, PIT
-Anthony Smith, WR, DAL
-Sam Roush, TE, CHI
-Haynes King, QB, CAR
-J. Michael Gyllenborg, TE, KC
-Desmond Reid, RB, BUF
-J. Michael Sturdivant, WR, GB
-Joe Royer, TE, CLE
-Bauer Sharp, TE, TB
-Josh Cuevas, TE, BAL
-Jordan Hudson, WR, DAL
-Jamal Haynes, RB, CIN
-Barion Brown, WR, NO
-Dallen Bentley, TE, DEN
-Jaren Kanak, TE, TEN
-Luke Altmyer, QB, DET
-Sawyer Robertson, QB, LV
-Joey Aguilar, QB, JAX
-Joe Fagnano, QB, BAL
-Jalon Daniels, QB, TB
-Eric Rivers, WR, TB
-Dae'Quan Wright, TE, PHI
-Eric McAlister, WR, 
-Jack Velling, TE, ATL
-Aaron Anderson, WR, CLE
-Miles Kitselman, TE, DET
-Miller Moss, QB, CHI
-Jaydn Ott, RB, KC
-`.trim();
-
-function parseRankings(raw){
-  return raw.split("\n").map(l => l.trim()).filter(Boolean).map((line, i) => {
-    const parts = line.split(",").map(s => s.trim());
-    return { rank: i+1, name: parts[0] || line, pos: (parts[1] || "").toUpperCase(),
-      nfl: (parts[2] || "").toUpperCase(), note: parts.slice(3).join(", ") || "" };
-  }).filter(p => p.name);
-}
 
 const sb = {
   ok: () => !!(SUPABASE_URL && SUPABASE_ANON_KEY),
@@ -657,7 +474,7 @@ function freshFromSnapshot(){
   const s = JSON.parse(JSON.stringify(SNAPSHOT));
   return { season: s.season, leagueName: "The Dynasty League", source: "spreadsheet snapshot",
     syncedAt: null, mode: "auction", teams: s.teams, rookieDraft: s.rookieDraft || [],
-    overrides: {}, keepPlan: {}, bigBoard: parseRankings(ROOKIE_RANKINGS_RAW), rankingsSource: "2026 SF/TEP Top 100 (baked in)" };
+    overrides: {}, keepPlan: {} };
 }
 
 async function persist(){
@@ -1100,133 +917,6 @@ function renderFaab(){
   }).join("");
 }
 
-/* ---- live rookie draft room ---- */
-function ldPicks(ld){ // flatten 3 rounds x 12, linear
-  const out = [];
-  for (let r = 1; r <= 3; r++) for (let s = 1; s <= 12; s++)
-    out.push({ round: r, slot: s, n: (r-1)*12 + s, teamIdx: ld.order[s-1], value: rookieValue(r, s) });
-  // apply pick trades (overrides of owning team per overall pick number)
-  for (const p of out) if (ld.trades && ld.trades[p.n] != null) p.teamIdx = ld.trades[p.n];
-  return out;
-}
-function renderDraftRoom(){
-  const body = $("draftRoomBody");
-  const ld = state.liveDraft;
-  if (!ld || ld.status === "setup") {
-    const order = (ld && ld.order) || state.teams.map((_,i)=>i);
-    body.innerHTML = `<h3 style="margin-top:0">1 · Set the draft order</h3>
-      <p class="sub">Picks 1–6: reverse order of MAX PF among non-playoff teams. Picks 7–12: reverse playoff finish (champion picks 12th). "Reverse standings" is a starting point — the Commissioner sets the final order.</p>
-      <button class="btn small quiet" id="ldRev">Fill from reverse standings</button>
-      <div style="margin:10px 0">` +
-      order.map((ti,i)=>`<div class="orderrow"><span class="pk num">${i+1}.</span>
-        <select data-slot="${i}">${state.teams.map((t,x)=>`<option value="${x}"${x===ti?" selected":""}>${esc(t.name)}</option>`).join("")}</select></div>`).join("") +
-      `</div><button class="btn" id="ldStart">Start draft</button>`;
-    $("ldRev").onclick = () => {
-      const idx = state.teams.map((t,i)=>({i, fpts: t.fpts||0})).sort((a,b)=>a.fpts-b.fpts).map(x=>x.i);
-      state.liveDraft = { status:"setup", order: idx, picks:{}, trades:{} };
-      persist(); renderDraftRoom();
-    };
-    body.querySelectorAll("select[data-slot]").forEach(sel => sel.onchange = () => {
-      if (!state.liveDraft) state.liveDraft = { status:"setup", order: state.teams.map((_,i)=>i), picks:{}, trades:{} };
-      state.liveDraft.order[+sel.dataset.slot] = +sel.value;
-      persist();
-    });
-    $("ldStart").onclick = () => {
-      if (!state.liveDraft) state.liveDraft = { status:"setup", order: state.teams.map((_,i)=>i), picks:{}, trades:{} };
-      const o = state.liveDraft.order;
-      if (new Set(o).size !== 12) return alert("Each team must appear exactly once in the order.");
-      state.liveDraft.status = "live"; state.liveDraft.picks = {}; state.liveDraft.trades = state.liveDraft.trades || {};
-      persist(); renderDraftRoom();
-    };
-    return;
-  }
-
-  const picks = ldPicks(ld);
-  const made = n => ld.picks[n];
-  const next = picks.find(p => !made(p.n));
-  const done = !next;
-  if (done && ld.status === "live") { ld.status = "done"; persist(); }
-
-  let html = "";
-  if (!done) {
-    const t = state.teams[next.teamIdx];
-    const taxiFull = t.players.filter(p=>p.slot==="taxi").length >= 5;
-    html += `<div class="clock">
-      <div class="pickno num">${next.round}.${String(next.slot).padStart(2,"0")}</div>
-      <div class="otc"><small>On the clock</small>${esc(t.name)}</div>
-      <div class="slotval num">${money(next.value)}</div>
-    </div>
-    <div class="formrow">
-      <div class="field"><label>Player</label><input id="ldName" placeholder="Rookie name" autocomplete="off"></div>
-      <div class="field"><label>Pos</label><select id="ldPos"><option>RB</option><option>WR</option><option>QB</option><option>TE</option><option>PK</option><option>DEF</option></select></div>
-      <button class="btn" id="ldPick">Make pick — ${money(next.value)} to ${taxiFull ? "active roster" : "taxi"}</button>
-      ${Object.keys(ld.picks).length ? `<button class="btn ghost" id="ldUndo">Undo last pick</button>` : ""}
-    </div>`;
-    const gone = draftedNames();
-    const avail = (state.bigBoard || []).filter(p => !gone.has(p.name.toLowerCase())).slice(0, 6);
-    if (avail.length) html += `<div class="chiprow" style="margin-top:8px">` +
-      avail.map(p => `<span class="chip pickchip" data-qp="${esc(p.name)}" data-qpos="${esc(p.pos)}" role="button" tabindex="0">${esc(p.name)} · ${esc(p.pos)}${p.nfl?` · ${esc(p.nfl)}`:""}</span>`).join("") + `</div>`;
-  } else {
-    html += `<div class="clock"><div class="otc"><small>Draft complete</small>All 36 picks in the books</div>
-      <button class="btn ghost small" id="ldReset" style="margin-left:auto">New draft</button></div>`;
-  }
-
-  html += `<h3>Board</h3><div class="tablewrap"><table><tr><th>Pick</th><th class="r">Value</th><th>Team</th><th>Selection</th></tr>` +
-    picks.map(p => {
-      const m = made(p.n);
-      const otc = next && p.n === next.n;
-      const teamCell = m ? esc(state.teams[p.teamIdx].name) :
-        `<select data-trade="${p.n}" title="Reassign this pick (pick trade)">${state.teams.map((t,x)=>`<option value="${x}"${x===p.teamIdx?" selected":""}>${esc(t.name)}</option>`).join("")}</select>`;
-      return `<tr class="boardrow${otc?" onclock-row":""}">
-        <td class="num" style="font-family:var(--disp);font-weight:700">${p.round}.${String(p.slot).padStart(2,"0")}</td>
-        <td class="r num" style="color:var(--turf);font-weight:600">${money(p.value)}</td>
-        <td>${teamCell}</td>
-        <td class="picked">${m ? `${esc(m.name)} <span class="pos">${esc(m.pos)}</span>` : otc ? "<b>on the clock</b>" : ""}</td></tr>`;
-    }).join("") + `</table></div>`;
-  body.innerHTML = html;
-
-  body.querySelectorAll("select[data-trade]").forEach(sel => sel.onchange = () => {
-    ld.trades[+sel.dataset.trade] = +sel.value; persist(); renderDraftRoom();
-  });
-  body.querySelectorAll(".chip[data-qp]").forEach(ch => {
-    const use = () => { $("ldName").value = ch.dataset.qp; $("ldPos").value = ch.dataset.qpos; $("ldName").focus(); };
-    ch.onclick = use; ch.onkeydown = e => { if (e.key === "Enter") use(); };
-  });
-  if (!done) {
-    const doPick = () => {
-      const name = $("ldName").value.trim();
-      if (!name) return alert("Enter the player's name.");
-      const t = state.teams[next.teamIdx];
-      const slot = t.players.filter(p=>p.slot==="taxi").length < 5 ? "taxi" : "active";
-      const pos = $("ldPos").value;
-      t.players.push({ pid: "ld-"+next.n, name, pos, nfl:"", slot, base: next.value, ky: 0, salary: next.value, src: "Rookie" });
-      ld.picks[next.n] = { name, pos, teamIdx: next.teamIdx };
-      persist(); renderDraftRoom(); renderCap();
-    };
-    $("ldPick").onclick = doPick;
-    $("ldName").onkeydown = e => { if (e.key === "Enter") doPick(); };
-    $("ldName").focus();
-    const undo = $("ldUndo");
-    if (undo) undo.onclick = () => {
-      const nums = Object.keys(ld.picks).map(Number).sort((a,b)=>b-a);
-      const last = nums[0]; const m = ld.picks[last];
-      const t = state.teams[m.teamIdx];
-      const i = t.players.findIndex(p => p.pid === "ld-"+last);
-      if (i >= 0) t.players.splice(i,1);
-      delete ld.picks[last];
-      ld.status = "live";
-      persist(); renderDraftRoom(); renderCap();
-    };
-  } else {
-    const r = $("ldReset");
-    if (r) r.onclick = async () => {
-      if (!(await confirmDlg("New draft","Clear the board and start a fresh draft? Players already added to rosters stay there."))) return;
-      state.liveDraft = { status:"setup", order: ld.order, picks:{}, trades:{} };
-      persist(); renderDraftRoom();
-    };
-  }
-}
-
 /* ---- league dates & countdowns ---- */
 const DATE_LABELS = { feeDue:"Fees due", rookieDraft:"Rookie draft", auction:"Veteran auction", trim:"Trim to 25", taxiLock:"Taxi lock", tradeDeadline:"Trade deadline" };
 function renderDates(){
@@ -1304,113 +994,13 @@ function bindTrades(){
   $("trClear").onclick = () => { trade.pa.clear(); trade.pb.clear(); $("trNote").value = ""; renderTrades(); };
 }
 
-/* ---- rookie big board ---- */
-function draftedNames(){
-  const s = new Set();
-  if (state.liveDraft && state.liveDraft.picks) for (const m of Object.values(state.liveDraft.picks)) s.add(m.name.toLowerCase());
-  if (state.rookieDraft) for (const p of state.rookieDraft) s.add(String(p.player).toLowerCase());
-  return s;
-}
-function renderBigBoard(){
-  const bb = state.bigBoard || [];
-  const gone = draftedNames();
-  const src = state.rankingsSource || "custom list";
-  $("bbSourceNote").innerHTML = `Rankings source: <b>${esc(src)}</b> · ${bb.length} players`;
-  $("tblBB").innerHTML = bb.length
-    ? `<tr><th>#</th><th>Pos</th><th>Prospect</th><th>NFL</th><th>Note</th><th class="r"></th></tr>` +
-      bb.map((p,i) => `<tr class="${gone.has(p.name.toLowerCase()) ? "bb-drafted" : ""}">
-        <td class="num" style="font-family:var(--disp);font-weight:700">${i+1}</td>
-        <td><span class="pos">${esc(p.pos||"—")}</span></td><td>${esc(p.name)}</td>
-        <td class="sub" style="margin:0">${esc(p.nfl||"")}</td>
-        <td class="sub" style="margin:0">${esc(p.note||"")}</td>
-        <td class="r">
-          <button class="btn small quiet" data-bb="up" data-i="${i}" ${i===0?"disabled":""} aria-label="Move up">↑</button>
-          <button class="btn small quiet" data-bb="dn" data-i="${i}" ${i===bb.length-1?"disabled":""} aria-label="Move down">↓</button>
-          <button class="btn small quiet" data-bb="rm" data-i="${i}" aria-label="Remove">×</button>
-        </td></tr>`).join("")
-    : `<tr><td style="color:var(--ink-soft)">Board's empty — add rookies below or paste a list under "Update rankings".</td></tr>`;
-}
-function bindBigBoard(){
-  const add = () => {
-    const name = $("bbName").value.trim();
-    if (!name) return;
-    if (!state.bigBoard) state.bigBoard = [];
-    if (state.bigBoard.some(p => p.name.toLowerCase() === name.toLowerCase())) return alert(`${name} is already on the board.`);
-    state.bigBoard.push({ name, pos: $("bbPos").value, note: $("bbNote").value.trim() });
-    $("bbName").value = ""; $("bbNote").value = "";
-    persist(); renderBigBoard(); $("bbName").focus();
-  };
-  $("bbAdd").onclick = add;
-  $("bbName").onkeydown = e => { if (e.key === "Enter") add(); };
-  $("tblBB").addEventListener("click", e => {
-    const b = e.target.closest("button[data-bb]"); if (!b) return;
-    const i = +b.dataset.i, bb = state.bigBoard;
-    if (b.dataset.bb === "rm") bb.splice(i,1);
-    if (b.dataset.bb === "up" && i > 0) [bb[i-1], bb[i]] = [bb[i], bb[i-1]];
-    if (b.dataset.bb === "dn" && i < bb.length-1) [bb[i+1], bb[i]] = [bb[i], bb[i+1]];
-    persist(); renderBigBoard();
-  });
-  $("bbImport").onclick = async () => {
-    if (!(await requireCommish())) return;
-    const raw = $("bbPaste").value.trim();
-    if (!raw){ $("bbImportNote").textContent = "Paste a list first."; return; }
-    const parsed = parseRankings(raw);
-    if (!parsed.length){ $("bbImportNote").textContent = "Couldn't read any players from that."; return; }
-    if (!(await confirmDlg("Replace big board", `Replace the current board with ${parsed.length} pasted players? This can't be undone (but you can restore the built-in Top 100).`))) return;
-    state.bigBoard = parsed;
-    state.rankingsSource = `pasted ${new Date().toLocaleDateString()}`;
-    $("bbPaste").value = "";
-    $("bbImportNote").textContent = `Imported ${parsed.length} players.`;
-    persist(); renderBigBoard(); renderDraftRoom();
-  };
-  $("bbRestore").onclick = async () => {
-    if (!(await requireCommish())) return;
-    if (!(await confirmDlg("Restore built-in list", "Replace the board with the built-in 2026 Top 100?"))) return;
-    state.bigBoard = parseRankings(ROOKIE_RANKINGS_RAW);
-    state.rankingsSource = "2026 SF/TEP Top 100 (baked in)";
-    $("bbImportNote").textContent = "Restored built-in Top 100.";
-    persist(); renderBigBoard(); renderDraftRoom();
-  };
-}
-
-/* ---- franchise history ---- */
-function renderHistory(){
-  const h = state.history || [];
-  if (!h.length) { $("histBanners").innerHTML = ""; $("tblAllTime").innerHTML = `<tr><td style="color:var(--ink-soft)">History fills in after a Sleeper sync.</td></tr>`; $("histSeasons").innerHTML = ""; return; }
-  $("histBanners").innerHTML = h.filter(s => s.complete && s.champion != null).map(s => {
-    const champ = s.teams.find(t => t.champ);
-    return `<span class="chip champ">🏆 ${esc(s.season)} — ${esc(champ ? champ.name : "?")}</span>`;
-  }).join("") || `<span class="sub" style="margin:0">No completed championships yet.</span>`;
-  // all-time by owner
-  const agg = {};
-  for (const s of h) for (const t of s.teams) {
-    const k = t.owner || t.name;
-    const a = agg[k] = agg[k] || { owner: k, seasons: 0, wins: 0, losses: 0, fpts: 0, faab: 0, titles: 0, seconds: 0 };
-    a.seasons++; a.wins += t.wins; a.losses += t.losses; a.fpts += t.fpts; a.faab += t.faab;
-    if (t.champ && s.complete) a.titles++; if (t.runner && s.complete) a.seconds++;
-  }
-  const rows = Object.values(agg).sort((a,b)=>(b.titles-a.titles)||(b.wins-a.wins)||(b.fpts-a.fpts));
-  $("tblAllTime").innerHTML = `<tr><th>Owner</th><th class="r">🏆</th><th class="r">W</th><th class="r">L</th><th class="r">Win %</th><th class="r">PF</th><th class="r">FAAB spent</th></tr>` +
-    rows.map(a => `<tr><td>${esc(a.owner)}</td><td class="r num">${a.titles||""}</td>
-      <td class="r num">${a.wins}</td><td class="r num">${a.losses}</td>
-      <td class="r num">${a.wins+a.losses ? Math.round(100*a.wins/(a.wins+a.losses)) + "%" : "—"}</td>
-      <td class="r num">${a.fpts.toFixed(0)}</td><td class="r num">${money(a.faab)}</td></tr>`).join("");
-  $("histSeasons").innerHTML = h.map(s => `<h3>${esc(s.season)} season${s.complete ? "" : " · in progress"}</h3>
-    <div class="tablewrap"><table><tr><th>#</th><th>Team</th><th class="r">W</th><th class="r">L</th><th class="r">PF</th><th></th></tr>` +
-    s.teams.map((t,i)=>`<tr><td class="num" style="font-family:var(--disp);font-weight:700">${i+1}</td>
-      <td>${esc(t.name)}<span class="sub" style="margin:0;display:block">${esc(t.owner)}</span></td>
-      <td class="r num">${t.wins}</td><td class="r num">${t.losses}</td><td class="r num">${t.fpts.toFixed(1)}</td>
-      <td>${t.champ?'<span class="chip champ" style="padding:1px 8px">🏆</span>':t.runner?'<span class="tag ovr">2nd</span>':t.third?'<span class="tag">3rd</span>':""}</td></tr>`).join("") +
-    `</table></div>`).join("");
-}
-
-/* ======== records: hall of fame + record book + rivalries ======== */
+/* ======== league: hall of fame + record book + rivalries + season history ======== */
 function ownerAgg(){
   const agg = {};
   for (const s of (state.history||[])) for (const t of s.teams){
     const k = t.owner || t.name;
-    const a = agg[k] = agg[k] || { owner:k, seasons:0, wins:0, losses:0, fpts:0, titles:0, seconds:0, thirds:0 };
-    a.seasons++; a.wins += t.wins; a.losses += t.losses; a.fpts += t.fpts;
+    const a = agg[k] = agg[k] || { owner:k, seasons:0, wins:0, losses:0, fpts:0, faab:0, titles:0, seconds:0, thirds:0 };
+    a.seasons++; a.wins += t.wins; a.losses += t.losses; a.fpts += t.fpts; a.faab += (t.faab || 0);
     if (s.complete && t.champ) a.titles++; if (s.complete && t.runner) a.seconds++; if (s.complete && t.third) a.thirds++;
   }
   return Object.values(agg);
@@ -1424,12 +1014,21 @@ function renderRecords(){
   }).filter(Boolean).join("") || `<span class="sub" style="margin:0">No completed championships yet.</span>`;
 
   const agg = ownerAgg().sort((a,b)=>(b.titles-a.titles)||(b.wins-a.wins)||(b.fpts-a.fpts));
-  $("tblHof").innerHTML = agg.length ? `<tr><th>Owner</th><th class="r">🏆</th><th class="r">2nd</th><th class="r">Seasons</th><th class="r">W</th><th class="r">L</th><th class="r">Win %</th><th class="r">Total PF</th></tr>` +
-    agg.map(a => `<tr><td>${esc(a.owner)}</td><td class="r num">${a.titles||""}</td><td class="r num">${a.seconds||""}</td>
+  $("tblHof").innerHTML = agg.length ? `<tr><th>Owner</th><th class="r">🏆</th><th class="r">2nd</th><th class="r">3rd</th><th class="r">Seasons</th><th class="r">W</th><th class="r">L</th><th class="r">Win %</th><th class="r">Total PF</th><th class="r">FAAB spent</th></tr>` +
+    agg.map(a => `<tr><td>${esc(a.owner)}</td><td class="r num">${a.titles||""}</td><td class="r num">${a.seconds||""}</td><td class="r num">${a.thirds||""}</td>
       <td class="r num">${a.seasons}</td><td class="r num">${a.wins}</td><td class="r num">${a.losses}</td>
       <td class="r num">${a.wins+a.losses?Math.round(100*a.wins/(a.wins+a.losses))+"%":"—"}</td>
-      <td class="r num">${a.fpts.toFixed(0)}</td></tr>`).join("")
+      <td class="r num">${a.fpts.toFixed(0)}</td><td class="r num">${money(a.faab)}</td></tr>`).join("")
     : `<tr><td style="color:var(--ink-soft)">Sync to build the leaderboard.</td></tr>`;
+
+  // Season by season
+  $("histSeasons").innerHTML = h.length ? h.map(s => `<h3>${esc(s.season)} season${s.complete ? "" : " · in progress"}</h3>
+    <div class="tablewrap"><table><tr><th>#</th><th>Team</th><th class="r">W</th><th class="r">L</th><th class="r">PF</th><th></th></tr>` +
+    s.teams.map((t,i)=>`<tr><td class="num" style="font-family:var(--disp);font-weight:700">${i+1}</td>
+      <td>${esc(t.name)}<span class="sub" style="margin:0;display:block">${esc(t.owner||"")}</span></td>
+      <td class="r num">${t.wins}</td><td class="r num">${t.losses}</td><td class="r num">${t.fpts.toFixed(1)}</td>
+      <td>${t.champ?'<span class="chip champ" style="padding:1px 8px">🏆</span>':t.runner?'<span class="tag ovr">2nd</span>':t.third?'<span class="tag">3rd</span>':""}</td></tr>`).join("") +
+    `</table></div>`).join("") : `<p class="sub">Season history fills in after a Sleeper sync.</p>`;
 
   // Record book from week scores + games
   const ws = state.weekScores || [], gm = state.games || [];
@@ -1457,9 +1056,18 @@ function renderRecords(){
     ].filter(Boolean).join("");
   }
 
-  // Rivalries
-  const fillSel = (id) => { const el = $(id); if (el.options.length !== state.teams.length) el.innerHTML = state.teams.map((t,i)=>`<option value="${i}">${esc(t.name)}</option>`).join(""); };
-  fillSel("rivA"); fillSel("rivB");
+  // Rivalries. Rebuild when the roster of team names changes, not just the count,
+  // and seed B to a different team so the dropdowns show what's actually compared.
+  const key = state.teams.map(t=>t.name).join("|");
+  const fillSel = (id, defIdx) => {
+    const el = $(id);
+    if (el.dataset.key !== key){
+      el.innerHTML = state.teams.map((t,i)=>`<option value="${i}">${esc(t.name)}</option>`).join("");
+      el.dataset.key = key;
+      el.selectedIndex = Math.min(defIdx, state.teams.length-1);
+    }
+  };
+  fillSel("rivA", 0); fillSel("rivB", 1);
   if ($("rivA").selectedIndex < 0) $("rivA").selectedIndex = 0;
   if ($("rivB").selectedIndex < 0) $("rivB").selectedIndex = Math.min(1, state.teams.length-1);
   renderRivalry();
@@ -1469,7 +1077,7 @@ function renderRivalry(){
   let ia = $("rivA").selectedIndex, ib = $("rivB").selectedIndex;
   if (ia < 0) ia = 0;
   if (ib < 0) ib = Math.min(1, state.teams.length - 1);
-  if (ia === ib && state.teams.length > 1) ib = ia === 0 ? 1 : 0; // never compare a team to itself
+  if (ia === ib){ $("rivResult").innerHTML = `<span class="sub">Pick two different teams.</span>`; return; }
   const a = state.teams[ia], b = state.teams[ib];
   if (!a || !b || a === b){ $("rivResult").innerHTML = `<span class="sub">Need at least two teams.</span>`; return; }
   // Match on team name (roster IDs are stable within a chain; names are what we stored on games)
@@ -1531,79 +1139,82 @@ function renderPower(){
       <td class="r num">${r.t.wins||0}–${r.t.losses||0}</td></tr>`).join("");
 }
 
-/* ======== payouts ======== */
-const PRIZE_PCT = { champion:0.63, runnerUp:0.25, third:0.04, highScore:0.08 };
-function renderPayouts(){
-  const buyin = +$("payBuyin").value;
-  const n = state.teams.length;
-  const pot = buyin * n;
-  if (!state.payins) state.payins = {};
-  $("payPot").innerHTML = `Pot: <b class="num">${money(pot)}</b> (${n} × ${money(buyin)})`;
-
-  // Buy-ins collected
-  $("tblPayIn").innerHTML = `<tr><th>Team</th><th class="r">Owes</th><th class="r">Paid?</th></tr>` +
-    state.teams.map(t => `<tr><td>${esc(t.name)}<span class="sub" style="margin:0;display:block">${esc(t.owner||"")}</span></td>
-      <td class="r num">${money(buyin)}</td>
-      <td class="r"><input type="checkbox" data-payin="${t.rosterId}"${state.payins[t.rosterId]?" checked":""}${commish?"":" disabled"} aria-label="Paid ${esc(t.name)}"></td></tr>`).join("");
-  const collected = state.teams.filter(t => state.payins[t.rosterId]).length * buyin;
-  // Prizes owed — from current standings leaders and season high score
-  const bySeed = [...state.teams].sort((a,b)=> ((b.wins||0)-(a.wins||0)) || ((b.fpts||0)-(a.fpts||0)));
-  const champ = bySeed[0], runner = bySeed[1], third = bySeed[2];
-  // regular-season high score = highest single week this season
-  const cur = (state.weekScores||[]).filter(x=>String(x.season)===String(state.season));
-  const hiWeek = cur.sort((a,b)=>b.points-a.points)[0];
-  const hiTeam = hiWeek ? state.teams.find(t=>t.name===hiWeek.team) : null;
-  const line = (lbl, pct, team, extra) => `<tr><td>${lbl}</td>
-    <td>${team?esc(team.name):'<span class="sub">TBD</span>'}${extra?` <span class="sub">${extra}</span>`:""}</td>
-    <td class="r num" style="font-weight:700;color:var(--turf)">${money(pot*pct)}</td>
-    <td class="r sub">${Math.round(pct*100)}%</td></tr>`;
-  $("tblPayOut").innerHTML = `<tr><th>Prize</th><th>Current leader</th><th class="r">Payout</th><th class="r">Share</th></tr>` +
-    line("Champion", PRIZE_PCT.champion, champ) +
-    line("Runner-up", PRIZE_PCT.runnerUp, runner) +
-    line("Third place", PRIZE_PCT.third, third) +
-    line("Reg-season high score", PRIZE_PCT.highScore, hiTeam, hiWeek?`${hiWeek.points.toFixed(1)} · Wk ${hiWeek.week}`:"") +
-    `<tr><td colspan="2" style="font-weight:700">Collected so far</td><td class="r num" style="font-weight:700">${money(collected)} / ${money(pot)}</td><td></td></tr>`;
+/* ======== draft review: season + draft-type + team dropdowns over the archive ==== */
+function archiveRows(d){
+  const picks = d ? (d.picks || []) : [];
+  const type = $("archiveType").value || "rookie";
+  const team = $("archiveTeam").value || "";
+  return picks
+    .filter(pk => (type === "auction" ? pk.type === "auction" : pk.type === "rookie"))
+    .filter(pk => !team || pk.team === team)
+    .sort((a,b) => type === "auction" ? (b.value - a.value) || String(a.player).localeCompare(String(b.player))
+                                      : (a.round - b.round) || (a.slot - b.slot));
 }
-function bindPayouts(){
-  $("payBuyin").onchange = () => { if (state) { state.buyin = +$("payBuyin").value; persist(); } renderPayouts(); };
-  $("tab-payouts").addEventListener("change", async e => {
-    const cb = e.target.closest("input[data-payin]"); if (!cb) return;
-    if (!commish){ renderPayouts(); return; }
-    if (!state.payins) state.payins = {};
-    if (cb.checked) state.payins[cb.dataset.payin] = true; else delete state.payins[cb.dataset.payin];
-    persist(); renderPayouts();
-  });
-}
-
 function renderDraft(){
-  renderDraftRoom();
-  if (!state.rookieDraft || !state.rookieDraft.length) {
-    $("tblDraft").innerHTML = `<tr><td style="color:var(--ink-soft)">No Sleeper rookie draft synced yet for ${esc(state.season)}.</td></tr>`;
-    renderArchive();
+  const arch = state.draftArchive || [];
+  const selS = $("archiveSeason"), selT = $("archiveType"), selTeam = $("archiveTeam");
+  if (!arch.length){
+    selS.innerHTML = ""; selT.innerHTML = ""; selTeam.innerHTML = "";
+    $("archiveSummary").innerHTML = "";
+    $("tblArchive").innerHTML = `<tr><td style="color:var(--ink-soft)">No draft history yet — hit Sync with Sleeper.</td></tr>`;
     return;
   }
-  $("tblDraft").innerHTML = `<tr><th>Pick</th><th class="r">Value</th><th>Player</th><th>Pos</th><th>Team</th></tr>` +
-    state.rookieDraft.map(p => `<tr><td class="num" style="font-family:var(--disp);font-weight:700">${esc(p.pick)}</td>
-      <td class="r num" style="color:var(--turf);font-weight:600">${money(p.value)}</td>
-      <td>${esc(p.player)}</td><td><span class="pos">${esc(p.pos||"—")}</span></td><td>${esc(p.team||"")}</td></tr>`).join("");
-  renderArchive();
-}
-function renderArchive(){
-  const arch = state.draftArchive || [];
-  const sel = $("archiveSeason");
-  if (!arch.length){ sel.innerHTML = ""; $("tblArchive").innerHTML = `<tr><td style="color:var(--ink-soft)">No draft history yet — hit Sync with Sleeper.</td></tr>`; return; }
-  if (sel.options.length !== arch.length){ sel.innerHTML = arch.map((d,i)=>`<option value="${i}">${esc(d.season)} season</option>`).join(""); sel.selectedIndex = 0; }
-  const idx = sel.selectedIndex < 0 ? 0 : sel.selectedIndex;
-  const d = arch[Math.min(idx, arch.length-1)];
-  const rows = [...d.picks].sort((a,b)=>{
-    if (a.type !== b.type) return a.type === "rookie" ? -1 : 1;
-    if (a.type === "rookie") return (a.round-b.round) || (a.slot-b.slot);
-    return (b.value-a.value);
-  }).map(pk => `<tr>
-    <td>${pk.type==="rookie" ? `<span class="num" style="font-family:var(--disp);font-weight:700">${esc(pk.pick||"")}</span>` : `<span class="tag">AUCT</span>`}</td>
-    <td class="r num" style="color:var(--turf);font-weight:600">${money(pk.value)}</td>
-    <td>${esc(pk.player)}</td><td><span class="pos">${esc(pk.pos||"—")}</span></td><td>${esc(pk.team||"")}</td></tr>`).join("");
-  $("tblArchive").innerHTML = `<tr><th>Pick</th><th class="r">Value</th><th>Player</th><th>Pos</th><th>Drafted by</th></tr>` + rows;
+  if (selS.options.length !== arch.length){
+    selS.innerHTML = arch.map((d,i)=>`<option value="${i}">${esc(d.season)}</option>`).join("");
+    selS.selectedIndex = 0;
+  }
+  const d = arch[Math.min(Math.max(selS.selectedIndex,0), arch.length-1)];
+  const picks = d.picks || [];
+
+  // Draft dropdown: only the drafts that actually happened that season.
+  const kinds = [];
+  if (picks.some(p => p.type === "rookie"))  kinds.push(["rookie","Rookie draft"]);
+  if (picks.some(p => p.type === "auction")) kinds.push(["auction","Veteran auction"]);
+  const want = selT.value;
+  const kindsKey = kinds.map(k=>k[0]).join(",");
+  if (selT.dataset.key !== kindsKey){
+    selT.innerHTML = kinds.map(([v,l])=>`<option value="${v}">${l}</option>`).join("");
+    selT.dataset.key = kindsKey;
+    if (kinds.some(k => k[0] === want)) selT.value = want;
+  }
+  if (!kinds.length){
+    selTeam.innerHTML = ""; $("archiveSummary").innerHTML = "";
+    $("tblArchive").innerHTML = `<tr><td style="color:var(--ink-soft)">No picks on file for ${esc(d.season)}.</td></tr>`;
+    return;
+  }
+  const type = selT.value || kinds[0][0];
+
+  // Team dropdown, scoped to the selected draft.
+  const teams = [...new Set(picks.filter(p => p.type === type).map(p => p.team).filter(Boolean))].sort();
+  const teamKey = d.season + "|" + type + "|" + teams.join("|");
+  const wantTeam = selTeam.value;
+  if (selTeam.dataset.key !== teamKey){
+    selTeam.innerHTML = `<option value="">All teams</option>` + teams.map(t=>`<option value="${esc(t)}">${esc(t)}</option>`).join("");
+    selTeam.dataset.key = teamKey;
+    if (teams.includes(wantTeam)) selTeam.value = wantTeam;
+  }
+
+  const rows = archiveRows(d);
+  const spent = rows.reduce((s,p)=>s+(p.value||0),0);
+  const label = type === "auction" ? "Veteran auction" : "Rookie draft";
+  $("archiveSummary").innerHTML =
+    `<span>${esc(d.season)} <b>${label}</b></span>` +
+    `<span><b class="num">${rows.length}</b> ${rows.length===1?"pick":"picks"}</span>` +
+    `<span>Total contracts <b class="num">${money(spent)}</b></span>` +
+    (rows.length ? `<span>Priciest <b>${esc(rows.slice().sort((a,b)=>b.value-a.value)[0].player)}</b> <b class="num">${money(rows.slice().sort((a,b)=>b.value-a.value)[0].value)}</b></span>` : "");
+
+  if (!rows.length){
+    $("tblArchive").innerHTML = `<tr><td style="color:var(--ink-soft)">Nothing to show for that combination.</td></tr>`;
+    return;
+  }
+  $("tblArchive").innerHTML =
+    `<tr><th>${type === "auction" ? "" : "Pick"}</th><th class="r">Contract</th><th>Player</th><th>Pos</th><th>Drafted by</th></tr>` +
+    rows.map(pk => `<tr>
+      <td>${type === "rookie"
+            ? `<span class="num" style="font-family:var(--disp);font-weight:700">${esc(pk.pick||"")}</span>`
+            : `<span class="tag">AUCT</span>`}</td>
+      <td class="r num" style="color:var(--turf);font-weight:600">${money(pk.value)}</td>
+      <td>${esc(pk.player)}</td><td><span class="pos">${esc(pk.pos||"—")}</span></td><td>${esc(pk.team||"")}</td></tr>`).join("");
 }
 
 function renderStand(){
@@ -1710,13 +1321,13 @@ function buildCapReportHTML(){
 function switchTab(tab){
   currentTab = tab;
   document.querySelectorAll("#nav button").forEach(b => b.classList.toggle("on", b.dataset.tab === tab));
-  ["cap","teams","keep","faab","trades","draft","stand","records","power","payouts","office","rules"].forEach(t => $("tab-"+t).hidden = t !== tab);
+  ["cap","teams","keep","faab","trades","draft","stand","power","office","rules"].forEach(t => $("tab-"+t).hidden = t !== tab);
   ({cap:()=>{renderCap();renderDates();}, teams:renderTeam, keep:renderKeep, faab:renderFaab,
-    trades:renderTrades, draft:()=>{renderBigBoard();renderDraft();},
-    stand:()=>{renderStand();renderHistory();}, records:renderRecords, power:renderPower,
-    payouts:renderPayouts, office:renderOffice}[tab] || (()=>{}))();
+    trades:renderTrades, draft:renderDraft,
+    stand:()=>{renderStand();renderRecords();}, power:renderPower,
+    office:renderOffice}[tab] || (()=>{}))();
 }
-function renderAll(){ renderHeader(); renderCap(); renderDates(); renderTeam(); renderKeep(); renderFaab(); renderTrades(); renderBigBoard(); renderDraft(); renderStand(); renderHistory(); renderRecords(); renderPower(); renderPayouts(); renderOffice(); switchTab(currentTab); }
+function renderAll(){ renderHeader(); renderCap(); renderDates(); renderTeam(); renderKeep(); renderFaab(); renderTrades(); renderDraft(); renderStand(); renderRecords(); renderPower(); renderOffice(); switchTab(currentTab); }
 
 $("lockBadge").onclick = async () => {
   if (commish){ setCommish(false); renderAll(); return; }
@@ -1756,12 +1367,6 @@ $("importFile").onchange = async e => {
   if (!state.overrides) state.overrides = {};
   if (!state.keepPlan) state.keepPlan = {};
   if (!state.mode) state.mode = "auction";
-  // Preload the baked-in rookie rankings if the board is empty (fresh install or
-  // pre-rankings saved data). Never overwrites a board owners have customized.
-  if (!state.bigBoard || !state.bigBoard.length) {
-    state.bigBoard = parseRankings(ROOKIE_RANKINGS_RAW);
-    if (!state.rankingsSource) state.rankingsSource = "2026 SF/TEP Top 100 (baked in)";
-  }
   if (!state.dates) state.dates = {};
   if (!state.history) state.history = [];
   if (!state.emails) state.emails = {};
@@ -1769,12 +1374,13 @@ $("importFile").onchange = async e => {
   if (!state.weekScores) state.weekScores = [];
   if (!state.games) state.games = [];
   if (!state.draftArchive) state.draftArchive = [];
-  if (!state.payins) state.payins = {};
-  if (state.buyin) $("payBuyin").value = String(state.buyin);
   $("standSeason").textContent = state.season;
   setCommish(false);
-  bindTeams(); bindKeep(); bindDates(); bindTrades(); bindBigBoard(); bindOffice(); bindPayouts();
-  $("archiveSeason").onchange = renderArchive;
+  bindTeams(); bindKeep(); bindDates(); bindTrades(); bindOffice();
+  // Draft review: changing the season resets the draft/team pickers to that season's options.
+  $("archiveSeason").onchange = () => { $("archiveType").dataset.key = ""; $("archiveTeam").dataset.key = ""; renderDraft(); };
+  $("archiveType").onchange   = () => { $("archiveTeam").dataset.key = ""; renderDraft(); };
+  $("archiveTeam").onchange   = renderDraft;
   $("rivA").onchange = renderRivalry; $("rivB").onchange = renderRivalry;
   renderAll();
   setStatus("ok", state.syncedAt ? `Last Sleeper sync ${new Date(state.syncedAt).toLocaleString()}` : `Showing ${state.source} · hit Sync with Sleeper for live numbers`);
@@ -1821,17 +1427,6 @@ $("importFile").onchange = async e => {
   }
   // Kick it off shortly after load so the initial paint isn't delayed.
   setTimeout(maybeAutoSync, 800);
-
-  // Draft-day live follow: while the board is open during a live draft, poll shared
-  // storage so every owner's screen updates as picks come in. Skips the update if
-  // you're mid-typing a pick. Works with Supabase or Claude shared storage.
-  if (sb.ok() || window.storage) setInterval(async () => {
-    if (currentTab !== "draft" || !state.liveDraft || state.liveDraft.status !== "live") return;
-    const nameInput = document.getElementById("ldName");
-    if (nameInput && (nameInput.value.trim() || document.activeElement === nameInput)) return;
-    const remote = await store.get(KEY);
-    if (remote && (remote.rev || 0) > (state.rev || 0)) { state = remote; renderAll(); }
-  }, 4000);
 })();
 </script>
 </body>
