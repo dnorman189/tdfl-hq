@@ -245,7 +245,8 @@ dialog::backdrop{background:rgba(14,27,44,.5)}
   <section id="tab-draft" hidden>
     <div class="card">
       <h2>Rookie big board</h2>
-      <p class="sub">The league's shared pre-draft rankings. Add prospects, order them, argue about it in the group chat. On draft night the board feeds the room below — the top available names appear as one-tap picks, and drafted players get crossed off automatically.</p>
+      <p class="sub" id="bbSourceNote"></p>
+      <p class="sub">The league's shared pre-draft rankings. Add prospects, reorder them, argue about it in the group chat. On draft night the board feeds the room below — the top available names appear as one-tap picks, and drafted players get crossed off automatically. This list is baked into the site: it needs no internet and can't fail on draft day.</p>
       <div class="formrow">
         <div class="field"><label>Prospect</label><input id="bbName" placeholder="Name" autocomplete="off"></div>
         <div class="field"><label>Pos</label><select id="bbPos"><option>RB</option><option>WR</option><option>QB</option><option>TE</option></select></div>
@@ -253,6 +254,16 @@ dialog::backdrop{background:rgba(14,27,44,.5)}
         <button class="btn" id="bbAdd">Add</button>
       </div>
       <div class="tablewrap" style="margin-top:10px"><table id="tblBB"></table></div>
+      <details style="margin-top:12px">
+        <summary style="cursor:pointer;font-size:12px;color:var(--ink-soft)">Update rankings (commissioner)</summary>
+        <p class="sub" style="margin-top:8px">Paste a fresh list to replace the board — one player per line as <code>Name, POS, TEAM</code> (POS and TEAM optional). Do this before draft day to refresh; it saves to the shared data and stays baked-in, so draft day never touches the internet.</p>
+        <textarea id="bbPaste" placeholder="Jeremiyah Love, RB, ARI&#10;Carnell Tate, WR, TEN&#10;..." style="width:100%;min-height:120px;border:1px solid var(--line);border-radius:8px;padding:8px;font-family:ui-monospace,monospace;font-size:12px"></textarea>
+        <div class="formrow">
+          <button class="btn small" id="bbImport">Replace board with pasted list</button>
+          <button class="btn small quiet" id="bbRestore">Restore built-in Top 100</button>
+          <span class="sub" id="bbImportNote" style="margin:0;align-self:center"></span>
+        </div>
+      </details>
     </div>
     <div class="card" id="draftRoom">
       <h2>Rookie draft room</h2>
@@ -448,6 +459,125 @@ const COMMISH_PIN = "1225";
    disable auto-sync and go back to manual-only.                                */
 const AUTO_SYNC_MS = 3 * 60 * 60 * 1000; // 3 hours
 
+/* ======== ROOKIE RANKINGS (baked in — no live fetch, ironclad on draft day) ====
+   2026 dynasty rookie big board, full Top 100 (12-team Superflex, 0.5 TE-premium).
+   Embedded so the draft board works with ZERO network dependency — it cannot fail
+   on draft night regardless of wifi, Sleeper, or any ranking site. Because it's a
+   superflex board, QBs rank higher than a standard-format list; it's advisory only
+   and never constrains the pick. Update anytime before the draft from the Draft tab
+   ("Update rankings" paste box, commissioner only) or edit here. Format per line:
+   "Player, POS, TEAM".                                                            */
+const ROOKIE_RANKINGS_RAW = `
+Jeremiyah Love, RB, ARI
+Fernando Mendoza, QB, LV
+Carnell Tate, WR, TEN
+Makai Lemon, WR, PHI
+Jordyn Tyson, WR, NO
+Kenyon Sadiq, TE, NYJ
+Ty Simpson, QB, LAR
+Jadarian Price, RB, SEA
+KC Concepcion, WR, CLE
+Omar Cooper Jr., WR, NYJ
+Denzel Boston, WR, CLE
+Eli Stowers, TE, PHI
+Germie Bernard, WR, PIT
+Malachi Fields, WR, NYG
+Zachariah Branch, WR, ATL
+Antonio Williams, WR, WAS
+De'Zhaun Stribling, WR, SF
+Chris Bell, WR, MIA
+Chris Brazzell Ii, WR, CAR
+Max Klare, TE, LAR
+Carson Beck, QB, ARI
+Drew Allar, QB, PIT
+Ja'Kobi Lane, WR, BAL
+Ted Hurst, WR, TB
+Jonah Coleman, RB, DEN
+Elijah Sarratt, WR, BAL
+Cade Klubnik, QB, NYJ
+Skyler Bell, WR, BUF
+Caleb Douglas, WR, MIA
+Nicholas Singleton, RB, TEN
+Eli Raridon, TE, NE
+Oscar Delp, TE, NO
+Justin Joly, TE, DEN
+Bryce Lance, WR, NO
+Kaytron Allen, RB, WAS
+Adam Randall, RB, BAL
+Taylen Green, QB, CLE
+Mike Washington Jr., RB, LV
+Zavion Thomas, WR, CHI
+Brenen Thompson, WR, LAC
+Kaelon Black, RB, SF
+Emmett Johnson, RB, KC
+Demond Claiborne, RB, MIN
+Kevin Coleman Jr., WR, MIA
+Cj Daniels, WR, LAR
+Deion Burks, WR, IND
+Colbie Young, WR, CIN
+Malik Benson, WR, LV
+Reggie Virgil, WR, ARI
+Marlin Klein, TE, HOU
+Tanner Koziol, TE, JAX
+Eli Heidenreich, RB, PIT
+Matthew Hibner, TE, BAL
+Jack Endries, TE, CIN
+Cyrus Allen, WR, KC
+Seth McGowan, RB, IND
+Garrett Nussmeier, QB, KC
+Cole Payton, QB, PHI
+Michael Trigg, TE, DAL
+Jeff Caldwell, WR, KC
+Josh Cameron, WR, JAX
+Kendrick Law, WR, DET
+Roman Hemby, RB, LV
+Robert Henry Jr., RB, WAS
+Noah Whittington, RB, HOU
+Nate Boerkircher, TE, JAX
+Will Kacmarek, TE, MIA
+Seydou Traore, TE, MIA
+Le'Veon Moss, RB, MIA
+J'Mari Taylor, RB, JAX
+Terion Stewart, RB, KC
+Diego Pavia, QB, BAL
+Kaden Wetjen, WR, PIT
+Anthony Smith, WR, DAL
+Sam Roush, TE, CHI
+Haynes King, QB, CAR
+J. Michael Gyllenborg, TE, KC
+Desmond Reid, RB, BUF
+J. Michael Sturdivant, WR, GB
+Joe Royer, TE, CLE
+Bauer Sharp, TE, TB
+Josh Cuevas, TE, BAL
+Jordan Hudson, WR, DAL
+Jamal Haynes, RB, CIN
+Barion Brown, WR, NO
+Dallen Bentley, TE, DEN
+Jaren Kanak, TE, TEN
+Luke Altmyer, QB, DET
+Sawyer Robertson, QB, LV
+Joey Aguilar, QB, JAX
+Joe Fagnano, QB, BAL
+Jalon Daniels, QB, TB
+Eric Rivers, WR, TB
+Dae'Quan Wright, TE, PHI
+Eric McAlister, WR, 
+Jack Velling, TE, ATL
+Aaron Anderson, WR, CLE
+Miles Kitselman, TE, DET
+Miller Moss, QB, CHI
+Jaydn Ott, RB, KC
+`.trim();
+
+function parseRankings(raw){
+  return raw.split("\n").map(l => l.trim()).filter(Boolean).map((line, i) => {
+    const parts = line.split(",").map(s => s.trim());
+    return { rank: i+1, name: parts[0] || line, pos: (parts[1] || "").toUpperCase(),
+      nfl: (parts[2] || "").toUpperCase(), note: parts.slice(3).join(", ") || "" };
+  }).filter(p => p.name);
+}
+
 const sb = {
   ok: () => !!(SUPABASE_URL && SUPABASE_ANON_KEY),
   headers: (extra) => ({ apikey: SUPABASE_ANON_KEY, Authorization: "Bearer " + SUPABASE_ANON_KEY,
@@ -527,7 +657,7 @@ function freshFromSnapshot(){
   const s = JSON.parse(JSON.stringify(SNAPSHOT));
   return { season: s.season, leagueName: "The Dynasty League", source: "spreadsheet snapshot",
     syncedAt: null, mode: "auction", teams: s.teams, rookieDraft: s.rookieDraft || [],
-    overrides: {}, keepPlan: {} };
+    overrides: {}, keepPlan: {}, bigBoard: parseRankings(ROOKIE_RANKINGS_RAW), rankingsSource: "2026 SF/TEP Top 100 (baked in)" };
 }
 
 async function persist(){
@@ -646,13 +776,28 @@ async function syncSleeper(auto){
       const lgUserById = Object.fromEntries(lgUsers.map(u => [u.user_id, u]));
       const seasonPicks = [];
       const drafts = await jSoft(`${API}/league/${lg.league_id}/drafts`, []);
-      for (const d of drafts) {
+      // Sleeper returns drafts in no guaranteed order. Within a season the vet
+      // AUCTION runs after the rookie draft (per the constitution), so when a
+      // player appears in both, the auction is the real acquisition. Sort drafts
+      // oldest→newest by start time so the later one is applied last, and only
+      // overwrite an existing acquisition if this draft is at least as recent.
+      // Tie-breaker: auction beats rookie (auction is always the later event).
+      const orderedDrafts = [...drafts].sort((a,b) => (a.start_time||a.created||0) - (b.start_time||b.created||0));
+      for (const d of orderedDrafts) {
         const picks = await jSoft(`${API}/draft/${d.draft_id}/picks`, []);
         const dat = d.start_time || d.created || 0; // drafts precede in-season moves
-        if (d.type === "auction") {
+        const isAuction = d.type === "auction";
+        const winsOver = (prev) => {
+          if (!prev) return true;
+          if ((prev.src === "FAAB" || prev.src === "FA") && (prev.at||0) > dat) return false; // in-season pickup is newer
+          if (dat !== (prev.at||0)) return dat >= (prev.at||0);   // later draft wins
+          return isAuction;                                        // same time: auction wins
+        };
+        if (isAuction) {
           for (const p of picks) if (p.player_id) {
             const amt = +((p.metadata && p.metadata.amount) || 1);
-            acq[p.player_id] = { season: +lg.season, base: amt, src: "Auction", at: dat };
+            if (winsOver(acq[p.player_id]))
+              acq[p.player_id] = { season: +lg.season, base: amt, src: "Auction", at: dat };
             seasonPicks.push({ type: "auction", pid: p.player_id, rosterId: p.roster_id, value: amt,
               pick: p.pick_no || null, round: null, slot: null });
           }
@@ -664,7 +809,8 @@ async function syncSleeper(auto){
             // pick_no only works for snake drafts; TDFL is linear, so use draft_slot.
             const slot = p.draft_slot || (((p.pick_no - 1) % perRound) + 1);
             const val = rookieValue(p.round, slot);
-            acq[p.player_id] = { season: +lg.season, base: val, src: "Rookie", at: dat };
+            if (winsOver(acq[p.player_id]))
+              acq[p.player_id] = { season: +lg.season, base: val, src: "Rookie", at: dat };
             rp.push({ round: p.round, slot, pick: `${p.round}.${String(slot).padStart(2,"0")}`, pid: p.player_id, rosterId: p.roster_id, value: val });
             seasonPicks.push({ type: "rookie", pid: p.player_id, rosterId: p.roster_id, value: val,
               pick: `${p.round}.${String(slot).padStart(2,"0")}`, round: p.round, slot });
@@ -1019,7 +1165,7 @@ function renderDraftRoom(){
     const gone = draftedNames();
     const avail = (state.bigBoard || []).filter(p => !gone.has(p.name.toLowerCase())).slice(0, 6);
     if (avail.length) html += `<div class="chiprow" style="margin-top:8px">` +
-      avail.map(p => `<span class="chip pickchip" data-qp="${esc(p.name)}" data-qpos="${esc(p.pos)}" role="button" tabindex="0">${esc(p.name)} · ${esc(p.pos)}</span>`).join("") + `</div>`;
+      avail.map(p => `<span class="chip pickchip" data-qp="${esc(p.name)}" data-qpos="${esc(p.pos)}" role="button" tabindex="0">${esc(p.name)} · ${esc(p.pos)}${p.nfl?` · ${esc(p.nfl)}`:""}</span>`).join("") + `</div>`;
   } else {
     html += `<div class="clock"><div class="otc"><small>Draft complete</small>All 36 picks in the books</div>
       <button class="btn ghost small" id="ldReset" style="margin-left:auto">New draft</button></div>`;
@@ -1168,17 +1314,21 @@ function draftedNames(){
 function renderBigBoard(){
   const bb = state.bigBoard || [];
   const gone = draftedNames();
+  const src = state.rankingsSource || "custom list";
+  $("bbSourceNote").innerHTML = `Rankings source: <b>${esc(src)}</b> · ${bb.length} players`;
   $("tblBB").innerHTML = bb.length
-    ? `<tr><th>#</th><th>Pos</th><th>Prospect</th><th>Note</th><th class="r"></th></tr>` +
+    ? `<tr><th>#</th><th>Pos</th><th>Prospect</th><th>NFL</th><th>Note</th><th class="r"></th></tr>` +
       bb.map((p,i) => `<tr class="${gone.has(p.name.toLowerCase()) ? "bb-drafted" : ""}">
         <td class="num" style="font-family:var(--disp);font-weight:700">${i+1}</td>
-        <td><span class="pos">${esc(p.pos)}</span></td><td>${esc(p.name)}</td><td class="sub" style="margin:0">${esc(p.note||"")}</td>
+        <td><span class="pos">${esc(p.pos||"—")}</span></td><td>${esc(p.name)}</td>
+        <td class="sub" style="margin:0">${esc(p.nfl||"")}</td>
+        <td class="sub" style="margin:0">${esc(p.note||"")}</td>
         <td class="r">
           <button class="btn small quiet" data-bb="up" data-i="${i}" ${i===0?"disabled":""} aria-label="Move up">↑</button>
           <button class="btn small quiet" data-bb="dn" data-i="${i}" ${i===bb.length-1?"disabled":""} aria-label="Move down">↓</button>
           <button class="btn small quiet" data-bb="rm" data-i="${i}" aria-label="Remove">×</button>
         </td></tr>`).join("")
-    : `<tr><td style="color:var(--ink-soft)">Board's empty — add the rookies you're eyeing.</td></tr>`;
+    : `<tr><td style="color:var(--ink-soft)">Board's empty — add rookies below or paste a list under "Update rankings".</td></tr>`;
 }
 function bindBigBoard(){
   const add = () => {
@@ -1200,6 +1350,27 @@ function bindBigBoard(){
     if (b.dataset.bb === "dn" && i < bb.length-1) [bb[i+1], bb[i]] = [bb[i], bb[i+1]];
     persist(); renderBigBoard();
   });
+  $("bbImport").onclick = async () => {
+    if (!(await requireCommish())) return;
+    const raw = $("bbPaste").value.trim();
+    if (!raw){ $("bbImportNote").textContent = "Paste a list first."; return; }
+    const parsed = parseRankings(raw);
+    if (!parsed.length){ $("bbImportNote").textContent = "Couldn't read any players from that."; return; }
+    if (!(await confirmDlg("Replace big board", `Replace the current board with ${parsed.length} pasted players? This can't be undone (but you can restore the built-in Top 100).`))) return;
+    state.bigBoard = parsed;
+    state.rankingsSource = `pasted ${new Date().toLocaleDateString()}`;
+    $("bbPaste").value = "";
+    $("bbImportNote").textContent = `Imported ${parsed.length} players.`;
+    persist(); renderBigBoard(); renderDraftRoom();
+  };
+  $("bbRestore").onclick = async () => {
+    if (!(await requireCommish())) return;
+    if (!(await confirmDlg("Restore built-in list", "Replace the board with the built-in 2026 Top 100?"))) return;
+    state.bigBoard = parseRankings(ROOKIE_RANKINGS_RAW);
+    state.rankingsSource = "2026 SF/TEP Top 100 (baked in)";
+    $("bbImportNote").textContent = "Restored built-in Top 100.";
+    persist(); renderBigBoard(); renderDraftRoom();
+  };
 }
 
 /* ---- franchise history ---- */
@@ -1585,7 +1756,12 @@ $("importFile").onchange = async e => {
   if (!state.overrides) state.overrides = {};
   if (!state.keepPlan) state.keepPlan = {};
   if (!state.mode) state.mode = "auction";
-  if (!state.bigBoard) state.bigBoard = [];
+  // Preload the baked-in rookie rankings if the board is empty (fresh install or
+  // pre-rankings saved data). Never overwrites a board owners have customized.
+  if (!state.bigBoard || !state.bigBoard.length) {
+    state.bigBoard = parseRankings(ROOKIE_RANKINGS_RAW);
+    if (!state.rankingsSource) state.rankingsSource = "2026 SF/TEP Top 100 (baked in)";
+  }
   if (!state.dates) state.dates = {};
   if (!state.history) state.history = [];
   if (!state.emails) state.emails = {};
