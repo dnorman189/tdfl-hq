@@ -474,7 +474,7 @@ function freshFromSnapshot(){
   const s = JSON.parse(JSON.stringify(SNAPSHOT));
   return { season: s.season, leagueName: "The Dynasty League", source: "spreadsheet snapshot",
     syncedAt: null, mode: "auction", teams: s.teams, rookieDraft: s.rookieDraft || [],
-    overrides: {}, keepPlan: {} };
+    overrides: {}, overrideAcq: {}, keepPlan: {} };
 }
 
 async function persist(){
@@ -650,7 +650,9 @@ async function syncSleeper(auto){
           // than trusting iteration order.
           const prev = acq[pid];
           if (!prev || !prev.at || when >= prev.at)
-            acq[pid] = { season: +lg.season, base: Math.max(bid, 1), src, at: when };
+            // No floor: a $0 waiver claim or a free-agent add (no bid) is a $0 contract
+            // (Amendment 6.2 — salary equals the winning bid; the constitution sets no minimum).
+            acq[pid] = { season: +lg.season, base: Math.max(bid, 0), src, at: when };
         }
       }
       // champion / runner-up / third from the winners bracket
@@ -724,9 +726,9 @@ async function syncSleeper(auto){
       const players = (r.players || []).map(pid => {
         const meta = allPlayers[pid] || {};
         const a = acq[pid];
-        let base, src, acqSeason, unknown = false;
-        if (a) { base = a.base; src = a.src; acqSeason = a.season; }
-        else if (prevByPid[pid]) { base = prevByPid[pid].base; src = prevByPid[pid].src || "Carryover"; acqSeason = season - (prevByPid[pid].ky || 0); }
+        let base, src, acqSeason, acqAt = null, unknown = false;
+        if (a) { base = a.base; src = a.src; acqSeason = a.season; acqAt = a.at || null; }
+        else if (prevByPid[pid]) { base = prevByPid[pid].base; src = prevByPid[pid].src || "Carryover"; acqSeason = season - (prevByPid[pid].ky || 0); acqAt = prevByPid[pid].acqAt ?? null; }
         else { base = 1; src = "?"; acqSeason = season; unknown = true; }
         const ky = Math.max(0, season - acqSeason);
         // Team defenses come back as the team code (e.g. "BUF") with no player record.
@@ -735,7 +737,7 @@ async function syncSleeper(auto){
         const pos = isDef ? "DEF" : (meta.position || "");
         return { pid, name, pos, nfl: meta.team || (isDef ? pid : ""),
           slot: taxi.has(pid) ? "taxi" : reserve.has(pid) ? "ir" : "active",
-          base, ky, salary: base + 5*ky, src, unknown };
+          base, ky, salary: base + 5*ky, src, unknown, acqAt };
       });
       return { name: name.trim(), owner: u.display_name || "", rosterId: r.roster_id, avatar: u.avatar || null,
         wins: r.settings && r.settings.wins || 0, losses: r.settings && r.settings.losses || 0,
@@ -743,6 +745,25 @@ async function syncSleeper(auto){
         fpts: r.settings ? (r.settings.fpts || 0) + (r.settings.fpts_decimal || 0)/100 : 0,
         faabSpent: faabSpent[r.roster_id] || 0, players };
     });
+
+    // A manual override belongs to one contract. If the player has since been
+    // re-acquired (dropped and picked up, re-won at auction, drafted again), the
+    // old override must not follow him onto the new deal. Trades don't create a
+    // new acquisition, so overrides still travel with traded players.
+    if (!state.overrideAcq) state.overrideAcq = {};
+    const onRoster = {};
+    for (const t of teams) for (const p of t.players) onRoster[p.pid] = { p, team: t.name };
+    for (const key of Object.keys(state.overrides)) {
+      const hit = onRoster[key];
+      if (!hit || hit.p.acqAt == null) continue;          // not rostered now, or no dated acquisition
+      const bound = state.overrideAcq[key];
+      if (!bound) { state.overrideAcq[key] = { acqAt: hit.p.acqAt, setAt: Date.now() }; continue; } // pre-existing override: bind to current contract
+      const stale = bound.acqAt != null ? bound.acqAt !== hit.p.acqAt : hit.p.acqAt > (bound.setAt || 0);
+      if (stale) {
+        logSalaryChange(key, hit.p.name, hit.team, state.overrides[key], null);
+        delete state.overrides[key]; delete state.overrideAcq[key];
+      }
+    }
 
     const teamByRid = Object.fromEntries(teams.map(t => [t.rosterId, t.name]));
     const pname = pid => (allPlayers[pid] && (allPlayers[pid].full_name || (allPlayers[pid].first_name ? allPlayers[pid].first_name+" "+allPlayers[pid].last_name : pid))) || (/^[A-Z]{2,3}$/.test(pid) ? pid+" DEF" : pid);
@@ -859,6 +880,8 @@ function bindTeams(){
     const from = state.overrides[key] != null ? state.overrides[key] : p.salary;
     const to = Math.max(0, +inp.value || 0);
     state.overrides[key] = to;
+    if (!state.overrideAcq) state.overrideAcq = {};
+    state.overrideAcq[key] = { acqAt: p.acqAt ?? null, setAt: Date.now() };
     logSalaryChange(key, p.name || key, state.teams[currentTeamIdx].name, from, to);
     persist(); renderTeam(); renderCap();
   });
@@ -869,6 +892,7 @@ function bindTeams(){
     const p = state.teams[currentTeamIdx].players.find(y => (y.pid || y.name) === key) || {};
     const from = state.overrides[key];
     delete state.overrides[key];
+    if (state.overrideAcq) delete state.overrideAcq[key];
     logSalaryChange(key, p.name || key, state.teams[currentTeamIdx].name, from, p.salary);
     persist(); renderTeam(); renderCap();
   });
@@ -937,8 +961,9 @@ function renderDates(){
   $("dateChips").innerHTML = chips.join("") || `<span class="sub" style="margin:0">No dates set yet — the Commissioner can add them below.</span>`;
 }
 function bindDates(){
-  $("dateForm").addEventListener("change", e => {
+  $("dateForm").addEventListener("change", async e => {
     const inp = e.target.closest("input[data-date]"); if (!inp) return;
+    if (!(await requireCommish())){ renderDates(); return; }
     if (!state.dates) state.dates = {};
     if (inp.value) state.dates[inp.dataset.date] = inp.value; else delete state.dates[inp.dataset.date];
     persist(); renderDates();
@@ -1338,6 +1363,7 @@ $("nav").addEventListener("click", e => { const b = e.target.closest("button"); 
 $("modeToggle").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; state.mode = b.dataset.mode; persist(); renderAll(); });
 $("syncBtn").onclick = () => syncSleeper(false);
 $("resetBtn").onclick = async () => {
+  if (!(await requireCommish())) return;
   if (!(await confirmDlg("Reset to snapshot","Discard all synced data, salary overrides, and keeper plans, and reload the built-in spreadsheet snapshot?"))) return;
   state = freshFromSnapshot(); await persist(); renderAll();
 };
@@ -1349,7 +1375,7 @@ $("exportBtn").onclick = () => {
   a.download = `tdfl-league-${state.season}-${new Date().toISOString().slice(0,10)}.json`;
   a.click(); URL.revokeObjectURL(a.href);
 };
-$("importBtn").onclick = () => $("importFile").click();
+$("importBtn").onclick = async () => { if (await requireCommish()) $("importFile").click(); };
 $("importFile").onchange = async e => {
   const f = e.target.files[0]; if (!f) return;
   try {
@@ -1365,6 +1391,7 @@ $("importFile").onchange = async e => {
   const saved = await store.get(KEY);
   state = saved || freshFromSnapshot();
   if (!state.overrides) state.overrides = {};
+  if (!state.overrideAcq) state.overrideAcq = {};
   if (!state.keepPlan) state.keepPlan = {};
   if (!state.mode) state.mode = "auction";
   if (!state.dates) state.dates = {};
