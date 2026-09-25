@@ -198,7 +198,7 @@ dialog::backdrop{background:rgba(14,27,44,.5)}
   <section id="tab-teams" hidden>
     <div class="card">
       <h2>Rosters &amp; contracts</h2>
-      <p class="sub">Salary = auction bid / rookie slot / FAAB bid, escalated for every season kept since (+$5 per season through 2026; from 2027 +20% per season, rounded to the nearest dollar, minimum +$2). Edit a salary to override the computed number (overrides survive syncs and are tagged <span class="tag ovr">manual</span>).</p>
+      <p class="sub">Salary = auction bid / rookie slot / FAAB bid, escalated for every season kept since (+$5 per season through 2026; from 2027 +20% per season, rounded to the nearest dollar, minimum +$2). Edit a salary to override the computed number (overrides survive syncs and are tagged <span class="tag ovr">manual</span>). A commissioner add in Sleeper carries no bid, so those contracts are priced from the correction list at the top of this file — that way every owner sees the same number, not just the browser where the edit was made.</p>
       <div class="formrow"><div class="field"><label>Team</label><select id="teamSelect"></select></div></div>
       <div id="teamCapSummary" class="sub" style="margin-top:10px"></div>
       <h3>Active roster</h3><div class="tablewrap"><table id="tblActive"></table></div>
@@ -429,6 +429,20 @@ const FAAB_BUDGET = 100;
    Leave blank to fall back to per-device browser storage.            */
 const SUPABASE_URL = "";      // e.g. "https://abcdefgh.supabase.co"
 const SUPABASE_ANON_KEY = ""; // the long "anon public" key
+
+/* ======== COMMISSIONER CONTRACT CORRECTIONS ========
+   For contracts Sleeper cannot price on its own. A commissioner add creates no
+   bid, so the hub would otherwise read the player as a $0 contract. Key by
+   Sleeper player id or exact full name; the value is the contract the league
+   agreed on, treated as the player's acquisition value (it escalates normally
+   in later seasons). A manual salary override set in the hub still wins over
+   anything listed here. Keep the reason on every line — this is a rules record.
+   Remove an entry once the player is no longer on a roster under that deal.   */
+const CONTRACT_CORRECTIONS = {
+  // 2026: over-cap waiver claim cancelled; awarded to the next bidder with cap
+  // room at their winning bid of $5. Commissioner add in Sleeper carries no bid.
+  "Kalif Raymond": 5
+};
 
 /* ======== COMMISSIONER PIN ========
    Anyone can view; editing (salaries, keepers, dates, draft, emails) is locked
@@ -818,6 +832,10 @@ async function syncSleeper(auto){
         const isDef = /^[A-Z]{2,3}$/.test(pid);
         const name = meta.full_name || (meta.first_name ? `${meta.first_name} ${meta.last_name}` : (isDef ? pid + " DEF" : pid));
         const pos = isDef ? "DEF" : (meta.position || "");
+        // Commissioner correction (see CONTRACT_CORRECTIONS): replaces the value
+        // Sleeper implies, then escalates like any other contract.
+        const fix = CONTRACT_CORRECTIONS[pid] != null ? CONTRACT_CORRECTIONS[pid] : CONTRACT_CORRECTIONS[name];
+        if (typeof fix === "number") { base = fix; unknown = false; if (src === "?" || !src) src = "Correction"; }
         return { pid, name, pos, nfl: meta.team || (isDef ? pid : ""),
           slot: taxi.has(pid) ? "taxi" : reserve.has(pid) ? "ir" : "active",
           base, ky, salary: escalate(base, acqSeason, season), src, unknown, acqAt };
