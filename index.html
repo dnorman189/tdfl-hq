@@ -198,7 +198,7 @@ dialog::backdrop{background:rgba(14,27,44,.5)}
   <section id="tab-teams" hidden>
     <div class="card">
       <h2>Rosters &amp; contracts</h2>
-      <p class="sub">Salary = auction bid / rookie slot / FAAB bid, +$5 for every season kept since. Edit a salary to override the computed number (overrides survive syncs and are tagged <span class="tag ovr">manual</span>).</p>
+      <p class="sub">Salary = auction bid / rookie slot / FAAB bid, escalated for every season kept since (+$5 per season through 2026; from 2027 +20% per season, rounded to the nearest dollar, minimum +$2). Edit a salary to override the computed number (overrides survive syncs and are tagged <span class="tag ovr">manual</span>).</p>
       <div class="formrow"><div class="field"><label>Team</label><select id="teamSelect"></select></div></div>
       <div id="teamCapSummary" class="sub" style="margin-top:10px"></div>
       <h3>Active roster</h3><div class="tablewrap"><table id="tblActive"></table></div>
@@ -211,7 +211,7 @@ dialog::backdrop{background:rgba(14,27,44,.5)}
     <div class="keepbar" id="keepSummary"></div>
     <div class="card">
       <h2>Keeper planner</h2>
-      <p class="sub">Pick a team, check who you're keeping. Next-year salary is current salary +$5. The bar above totals your kept contracts against the $200 auction cap so you can see the room you'll walk into the draft with. Taxi contracts are shown but excluded from the cap total (Art. IV §4.1.1). Plans save automatically and are visible to the whole league.</p>
+      <p class="sub">Pick a team, check who you're keeping. Next-year salary applies that season's escalator: +$5 through 2026, then +20% (nearest dollar, $2 minimum) from 2027 on. The bar above totals your kept contracts against the $200 auction cap so you can see the room you'll walk into the draft with. Taxi contracts are shown but excluded from the cap total (Art. IV §4.1.1). Plans save automatically and are visible to the whole league.</p>
       <div class="formrow"><div class="field"><label>Team</label><select id="keepTeamSelect"></select></div>
       <button class="btn small quiet" id="keepAll">Keep all</button>
       <button class="btn small quiet" id="keepNone">Keep none</button></div>
@@ -236,7 +236,7 @@ dialog::backdrop{background:rgba(14,27,44,.5)}
       </div>
       <div id="archiveSummary" class="keepbar" style="position:static;margin-top:12px"></div>
       <div class="tablewrap" style="margin-top:10px"><table id="tblArchive"></table></div>
-      <p class="sub" style="margin-top:10px">Rookie contracts are slotted by pick (1.01 $20 sliding to $10, round 2 $5, round 3 $1). Auction contracts are the winning bid. Both rise +$5 for every season the player is kept.</p>
+      <p class="sub" style="margin-top:10px">Rookie contracts are slotted by pick — through 2026: 1.01 $20 sliding to $10, round 2 $5, round 3 $1; from 2027: 1.01 $12 down $1 per pick to $1 at 1.12, rounds 2–3 $1. Auction contracts are the winning bid. Both escalate for every season kept (+$5 through 2026, +20% with a $2 minimum from 2027).</p>
     </div>
   </section>
 
@@ -319,9 +319,11 @@ dialog::backdrop{background:rgba(14,27,44,.5)}
       <h3>Cap &amp; contracts</h3>
       <ul>
         <li>$200 hard cap enforced at the veteran auction draft.</li>
-        <li>Every kept player's salary rises <b>+$5 per season</b> retained.</li>
-        <li>Rookie picks carry fixed salaries: 1.01 $20 → 1.06–1.12 $10; Rd 2 $5; Rd 3 $1.</li>
+        <li>Every kept player's salary rises <b>+$5 per season</b> retained (through the 2026 season).</li>
+        <li>Rookie picks carry fixed salaries: 1.01 $20 → 1.06–1.12 $10; Rd 2 $5; Rd 3 $1 (through 2026).</li>
         <li><b>2026 amendment:</b> $250 cap enforced year-round; FAAB winning bid becomes the player's salary; IR players don't count; auction cap stays $200.</li>
+        <li><b>Passed 2026, effective 2027 — keeper inflation:</b> a kept contract rises <b>20% per season</b> instead of $5, rounded to the nearest dollar, with a <b>$2 minimum</b> raise. Seasons kept before 2027 keep their $5 bumps.</li>
+        <li><b>Passed 2026, effective 2027 — rookie scale:</b> 1.01 drops from $20 to <b>$12</b> and steps down $1 per pick to $1 at 1.12; rounds 2 and 3 are $1.</li>
         <li>Taxi contracts never count against the cap at the start of the year.</li>
       </ul>
       <h3>Rosters</h3>
@@ -427,7 +429,32 @@ const sb = {
     } catch(e){ return []; }
   }
 };
-const rookieValue = (round, slot) => round===1 ? [20,18,16,14,12,10,10,10,10,10,10,10][Math.min(slot,12)-1] : round===2 ? 5 : 1;
+/* ---- contract values & escalation --------------------------------------
+   Two rule sets live side by side. Everything through the 2026 season uses
+   the original scale (1.01 $20 sliding to $10, Rd2 $5, Rd3 $1) and the flat
+   +$5 keeper escalator. The 2026 votes replaced both starting with the 2027
+   league year: rookie slots run $12 at 1.01 down $1 per pick to $1 at 1.12
+   and stay at $1 for Rds 2-3, and a kept contract rises 20% per season
+   (rounded to the nearest dollar) with a $2 minimum raise.
+   A contract is escalated season by season, so seasons kept before 2027
+   keep their +$5 bumps and only 2027-and-later seasons use the 20% rule. */
+const NEW_RULES_SEASON = 2027;
+const ROOKIE_SCALE_OLD = [20,18,16,14,12,10,10,10,10,10,10,10];
+const ROOKIE_SCALE_NEW = [12,11,10,9,8,7,6,5,4,3,2,1];
+const rookieValue = (round, slot, season) => {
+  const s = +season || 0;
+  if (s >= NEW_RULES_SEASON) return round===1 ? ROOKIE_SCALE_NEW[Math.min(slot,12)-1] : 1;
+  return round===1 ? ROOKIE_SCALE_OLD[Math.min(slot,12)-1] : round===2 ? 5 : 1;
+};
+// Raise applied when a contract is carried INTO `season`.
+const keeperRaise = (salary, season) =>
+  (+season || 0) >= NEW_RULES_SEASON ? Math.max(2, Math.round(salary * 0.2)) : 5;
+// Contract value in `season` for a deal signed in `acqSeason` at `base`.
+function escalate(base, acqSeason, season){
+  let s = +base || 0;
+  for (let y = (+acqSeason || 0) + 1; y <= (+season || 0); y++) s += keeperRaise(s, y);
+  return s;
+}
 
 let state = null;         // {season, leagueName, syncedAt, source, teams, rookieDraft, overrides, keepPlan, mode, emails}
 let currentTab = "cap";
@@ -625,7 +652,7 @@ async function syncSleeper(auto){
             // Sleeper gives draft_slot directly (the board column). Deriving it from
             // pick_no only works for snake drafts; TDFL is linear, so use draft_slot.
             const slot = p.draft_slot || (((p.pick_no - 1) % perRound) + 1);
-            const val = rookieValue(p.round, slot);
+            const val = rookieValue(p.round, slot, +lg.season);
             if (winsOver(acq[p.player_id]))
               acq[p.player_id] = { season: +lg.season, base: val, src: "Rookie", at: dat };
             rp.push({ round: p.round, slot, pick: `${p.round}.${String(slot).padStart(2,"0")}`, pid: p.player_id, rosterId: p.roster_id, value: val });
@@ -737,7 +764,7 @@ async function syncSleeper(auto){
         const pos = isDef ? "DEF" : (meta.position || "");
         return { pid, name, pos, nfl: meta.team || (isDef ? pid : ""),
           slot: taxi.has(pid) ? "taxi" : reserve.has(pid) ? "ir" : "active",
-          base, ky, salary: base + 5*ky, src, unknown, acqAt };
+          base, ky, salary: escalate(base, acqSeason, season), src, unknown, acqAt };
       });
       return { name: name.trim(), owner: u.display_name || "", rosterId: r.roster_id, avatar: u.avatar || null,
         wins: r.settings && r.settings.wins || 0, losses: r.settings && r.settings.losses || 0,
@@ -903,8 +930,10 @@ function renderKeep(){
   const t = state.teams[keepTeamIdx];
   if (!t) return;
   const kept = t.players.filter(p => state.keepPlan[p.pid || p.name]);
-  const keptCap = kept.filter(p=>p.slot!=="taxi").reduce((s,p)=>s+playerSalary(p)+5,0);
-  const keptTaxi = kept.filter(p=>p.slot==="taxi").reduce((s,p)=>s+playerSalary(p)+5,0);
+  const nextSeason = (+state.season || 0) + 1;
+  const nextSalary = p => { const s = playerSalary(p); return s + keeperRaise(s, nextSeason); };
+  const keptCap = kept.filter(p=>p.slot!=="taxi").reduce((s,p)=>s+nextSalary(p),0);
+  const keptTaxi = kept.filter(p=>p.slot==="taxi").reduce((s,p)=>s+nextSalary(p),0);
   $("keepSummary").innerHTML =
     `<span>Keeping <b class="num">${kept.length}</b> players</span>
      <span>Kept salary next year <b class="num">${money(keptCap)}</b></span>
@@ -916,9 +945,10 @@ function renderKeep(){
       <td><span class="pos">${esc(p.pos||"—")}</span></td>
       <td>${esc(p.name)}${p.slot!=="active"?` <span class="tag ${p.slot}">${p.slot.toUpperCase()}</span>`:""}</td>
       <td class="r num">${money(playerSalary(p))}</td>
-      <td class="r num" style="font-weight:600">${on?money(playerSalary(p)+5):"—"}</td></tr>`;
+      <td class="r num" style="font-weight:600">${on?money(nextSalary(p)):"—"}</td></tr>`;
   }).join("");
-  $("tblKeep").innerHTML = `<tr><th>Keep</th><th>Pos</th><th>Player</th><th class="r">Now</th><th class="r">Next yr</th></tr>` + rows;
+  const raiseLabel = nextSeason >= NEW_RULES_SEASON ? "+20%, $2 min" : "+$5";
+  $("tblKeep").innerHTML = `<tr><th>Keep</th><th>Pos</th><th>Player</th><th class="r">Now</th><th class="r">${nextSeason} (${raiseLabel})</th></tr>` + rows;
 }
 function bindKeep(){
   $("keepTeamSelect").onchange = e => { keepTeamIdx = +e.target.value; renderKeep(); };
