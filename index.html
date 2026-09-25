@@ -221,7 +221,7 @@ dialog::backdrop{background:rgba(14,27,44,.5)}
 
   <section id="tab-faab" hidden>
     <div class="card"><h2>FAAB budgets</h2>
-    <p class="sub" id="faabNote">$100 per team per season (Art. IV §4.3). Spent totals come from Sleeper waiver transactions; under the 2026 rule the winning bid becomes the player's salary.</p></div>
+    <p class="sub" id="faabNote">$100 per team per season (Art. IV §4.3). Under the 2026 rule the winning bid becomes the player's salary. Spent totals come from each team's budget in Sleeper, so commissioner adjustments (Commish tab → Edit Waiver) show up here too; if Sleeper doesn't report a budget, the hub falls back to adding up winning waiver bids, which will not include manual edits.</p></div>
     <div class="faabgrid" id="faabGrid"></div>
   </section>
 
@@ -303,7 +303,7 @@ dialog::backdrop{background:rgba(14,27,44,.5)}
   <section id="tab-rules" hidden>
     <div class="card rules">
       <h2>Constitution quick reference</h2>
-      <p class="sub">Condensed from the TDFL Constitution (updated 9/30/2024). The full document governs; this is the cheat sheet.</p>
+      <p class="sub">Condensed from the TDFL Constitution (9/30/2024) plus every amendment passed since, through September 2026. The full document governs; this is the cheat sheet.</p>
       <h3>Money &amp; payouts</h3>
       <p class="sub" style="margin-top:0">Buy-in is <b>$100</b> per team, due to the Commissioner on or before draft night (Art. II §2.1). Twelve teams makes a <b>$1,200</b> pot. Prize money is paid within seven days of the championship game (§2.2).</p>
       <div class="tablewrap">
@@ -318,14 +318,42 @@ dialog::backdrop{background:rgba(14,27,44,.5)}
       <p class="sub">Reg-season high score is the single highest weekly score in the regular season. Dues unpaid 14 days after the draft lottery let the League go to the waiting list.</p>
       <h3>Cap &amp; contracts</h3>
       <ul>
-        <li>$200 hard cap enforced at the veteran auction draft.</li>
-        <li>Every kept player's salary rises <b>+$5 per season</b> retained (through the 2026 season).</li>
-        <li>Rookie picks carry fixed salaries: 1.01 $20 → 1.06–1.12 $10; Rd 2 $5; Rd 3 $1 (through 2026).</li>
-        <li><b>2026 amendment:</b> $250 cap enforced year-round; FAAB winning bid becomes the player's salary; IR players don't count; auction cap stays $200.</li>
-        <li><b>Passed 2026, effective 2027 — keeper inflation:</b> a kept contract rises <b>20% per season</b> instead of $5, rounded to the nearest dollar, with a <b>$2 minimum</b> raise. Seasons kept before 2027 keep their $5 bumps.</li>
-        <li><b>Passed 2026, effective 2027 — rookie scale:</b> 1.01 drops from $20 to <b>$12</b> and steps down $1 per pick to $1 at 1.12; rounds 2 and 3 are $1.</li>
+        <li><b>$200</b> hard cap enforced at the veteran auction draft (Art. IV §4.2.2).</li>
+        <li><b>$250</b> cap enforced year-round, in-season included (Amendment 6.2, from 2026). A FAAB winning bid becomes that player's salary. Players on IR don't count while on IR.</li>
+        <li>Contracts escalate for <b>every season a player is kept</b> — see the escalator table below.</li>
+        <li>Rookie contracts are slotted by pick — see the rookie scale table below.</li>
         <li>Taxi contracts never count against the cap at the start of the year.</li>
       </ul>
+      <h3>Keeper escalator</h3>
+      <div class="tablewrap">
+        <table>
+          <tr><th>Seasons kept</th><th>Raise per season</th><th class="r">Authority</th></tr>
+          <tr><td>Through 2026</td><td><b>+$5</b> flat</td><td class="r sub">Art. IV §4.1</td></tr>
+          <tr><td>2027 onward</td><td><b>+20%</b> of current salary, rounded to the nearest dollar, <b>minimum +$2</b></td><td class="r sub">Amendment 6.3</td></tr>
+        </table>
+      </div>
+      <p class="sub">A contract escalates one season at a time, so seasons kept before 2027 keep their $5 bumps. The 20% is calculated on the current salary, not the original contract. Because 20% of $10 is $2, every contract under $10 rises exactly $2. Example: a $53 contract signed in 2024 is $63 in 2026, $76 in 2027, $91 in 2028.</p>
+      <h3>Rookie contract scale</h3>
+      <div class="tablewrap">
+        <table>
+          <tr><th>Pick</th><th class="r">Through 2026</th><th class="r">2027 onward (Amd. 6.4)</th></tr>
+          <tr><td>1.01</td><td class="r num">$20</td><td class="r num">$12</td></tr>
+          <tr><td>1.02</td><td class="r num">$18</td><td class="r num">$11</td></tr>
+          <tr><td>1.03</td><td class="r num">$16</td><td class="r num">$10</td></tr>
+          <tr><td>1.04</td><td class="r num">$14</td><td class="r num">$9</td></tr>
+          <tr><td>1.05</td><td class="r num">$12</td><td class="r num">$8</td></tr>
+          <tr><td>1.06</td><td class="r num">$10</td><td class="r num">$7</td></tr>
+          <tr><td>1.07</td><td class="r num">$10</td><td class="r num">$6</td></tr>
+          <tr><td>1.08</td><td class="r num">$10</td><td class="r num">$5</td></tr>
+          <tr><td>1.09</td><td class="r num">$10</td><td class="r num">$4</td></tr>
+          <tr><td>1.10</td><td class="r num">$10</td><td class="r num">$3</td></tr>
+          <tr><td>1.11</td><td class="r num">$10</td><td class="r num">$2</td></tr>
+          <tr><td>1.12</td><td class="r num">$10</td><td class="r num">$1</td></tr>
+          <tr><td>Round 2</td><td class="r num">$5</td><td class="r num">$1</td></tr>
+          <tr><td>Round 3</td><td class="r num">$1</td><td class="r num">$1</td></tr>
+        </table>
+      </div>
+      <p class="sub">Rookie contracts signed under the old table keep their value and escalate under the table above; the new scale governs picks made in the 2027 rookie draft and after.</p>
       <h3>Rosters</h3>
       <ul>
         <li>25 active · 2 IR · 5 taxi. Starters: 1 QB, 2 RB, 2 WR, 1 TE, 2 FLEX, 1 DEF, 1 PK.</li>
@@ -342,13 +370,30 @@ dialog::backdrop{background:rgba(14,27,44,.5)}
       <h3>Governance</h3>
       <ul>
         <li>Amendments: 12/12 to apply this year; 7/12 for next season; ties fail. "Current year" runs championship to championship (Amendment 6.1 "Archibald").</li>
+        <li>Amendments are named after the league member who caused or identified the problem.</li>
         <li>Commissioner: Dex Norman · Co-Commissioner: Sean Deeks. Mistakes reported within 24 hours.</li>
+      </ul>
+      <h3>Amendments on the books</h3>
+      <div class="tablewrap">
+        <table>
+          <tr><th>#</th><th>What it does</th><th class="r">In effect</th></tr>
+          <tr><td><b>6.1 "Archibald"</b></td><td>Defines "current year" as championship game to championship game. An amendment passed inside it needs 12/12 to apply that season, or 7/12 to apply the next one.</td><td class="r num">2025</td></tr>
+          <tr><td><b>6.2</b></td><td>In-season cap. $250 enforced year-round, FAAB winning bid becomes the salary, IR exempt while on IR, auction cap stays $200.</td><td class="r num">2026</td></tr>
+          <tr><td><b>6.3</b></td><td>Keeper inflation. Kept contracts rise 20% per season instead of $5, rounded to the nearest dollar, minimum $2. Not retroactive — seasons kept before 2027 keep their $5 bumps.</td><td class="r num">2027</td></tr>
+          <tr><td><b>6.4</b></td><td>Rookie scale. 1.01 drops from $20 to $12 and steps down $1 per pick to $1 at 1.12; rounds 2 and 3 are $1.</td><td class="r num">2027</td></tr>
+        </table>
+      </div>
+      <p class="sub">6.3 and 6.4 passed by league vote in September 2026 and were agreed at the draft to take effect for the 2027 season. This hub already applies them — nothing changes on any current contract until the 2027 league year begins.</p>
+      <h3>Known gaps</h3>
+      <ul>
+        <li>Art. IV §4.1 still says the cap isn't enforced once the season starts, which Amendment 6.2 overrides. The later, more specific rule governs until the wording is cleaned up.</li>
+        <li>Nothing in the constitution covers an in-season add that puts a team over the $250 cap. Commissioner ruling stands until it's written.</li>
       </ul>
     </div>
   </section>
 </main>
 
-<p class="footer-note" id="footNote">League data is shared — everyone opening this hub sees the same sheet, and it auto-refreshes from Sleeper in the background when it's more than a few hours old. Hit "Sync with Sleeper" any time you want the latest immediately. Salary overrides and keeper plans persist on top of every sync.</p>
+<p class="footer-note" id="footNote">League data is shared — everyone opening this hub sees the same sheet, and it auto-refreshes from Sleeper in the background when it's more than a few hours old. Hit "Sync with Sleeper" any time you want the latest immediately. Salary overrides and keeper plans persist on top of every sync. <span class="num">Hub build 2026-09-25</span> — if that date looks old, you're seeing a cached copy; hard-refresh the page.</p>
 
 <dialog id="confirmDlg">
   <h2 style="font-family:var(--disp);text-transform:uppercase;font-size:20px;margin-bottom:8px" id="dlgTitle">Confirm</h2>
@@ -732,7 +777,13 @@ async function syncSleeper(auto){
     state.weekScores = weekScores;
     state.games = games;
 
-    // 3. FAAB spent this season
+    // 3. FAAB spent this season.
+    //    Sleeper keeps the authoritative per-team figure on the roster itself
+    //    (settings.waiver_budget_used), and that number moves when the commish
+    //    edits a budget by hand (Commish tab → Edit Waiver) — a manual edit
+    //    creates no transaction, so summing waiver bids misses it. Use the
+    //    roster figure when Sleeper provides it and keep the transaction sum as
+    //    a fallback for leagues/seasons where it's absent.
     const faabSpent = {};
     const curWeeks = await Promise.all(Array.from({length:18},(_,w)=>j(`${API}/league/${cur.league_id}/transactions/${w+1}`).catch(()=>[])));
     for (const wk of curWeeks) for (const t of wk)
@@ -744,6 +795,11 @@ async function syncSleeper(auto){
     const allPlayers = await j(`${API}/players/nfl`);
 
     // 5. assemble teams
+    const budgetUsed = r => {
+      const v = r.settings && r.settings.waiver_budget_used;
+      return typeof v === "number" && isFinite(v) ? v : null;
+    };
+    const faabUsed = r => { const v = budgetUsed(r); return v != null ? v : (faabSpent[r.roster_id] || 0); };
     const prevByPid = {}; // carry salaries from current state for players Sleeper history can't price
     for (const t of state.teams) for (const p of t.players) if (p.pid) prevByPid[p.pid] = p;
     const teams = rosters.map(r => {
@@ -770,7 +826,7 @@ async function syncSleeper(auto){
         wins: r.settings && r.settings.wins || 0, losses: r.settings && r.settings.losses || 0,
         ties: r.settings && r.settings.ties || 0,
         fpts: r.settings ? (r.settings.fpts || 0) + (r.settings.fpts_decimal || 0)/100 : 0,
-        faabSpent: faabSpent[r.roster_id] || 0, players };
+        faabSpent: faabUsed(r), faabFromSleeper: budgetUsed(r) != null, players };
     });
 
     // A manual override belongs to one contract. If the player has since been
@@ -963,11 +1019,14 @@ function bindKeep(){
 
 function renderFaab(){
   $("faabGrid").innerHTML = [...state.teams].sort((a,b)=>a.faabSpent-b.faabSpent).map(t => {
+    // A commish budget edit can leave a team with more than the $100 they started
+    // with, so the bar is clamped at both ends rather than assuming 0–100.
     const left = FAAB_BUDGET - t.faabSpent;
+    const pct = Math.min(100, Math.max(0, left / FAAB_BUDGET * 100));
     return `<div class="faabcard"><div class="team">${esc(t.name)}</div>
       <div class="left num${left<=10?" low":""}">${money(left)}</div>
-      <div class="faabbar"><div style="width:${Math.max(0,left)/FAAB_BUDGET*100}%"></div></div>
-      <div class="sub num" style="margin:0">spent ${money(t.faabSpent)} of ${money(FAAB_BUDGET)}</div></div>`;
+      <div class="faabbar"><div style="width:${pct}%"></div></div>
+      <div class="sub num" style="margin:0">spent ${money(t.faabSpent)} of ${money(FAAB_BUDGET)}${t.faabFromSleeper===false?" · from bids":""}</div></div>`;
   }).join("");
 }
 
